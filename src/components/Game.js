@@ -70,9 +70,27 @@ const Game = () => {
         return cardObj
     })
 
+    var playerObject = {
+        deck: deckDatabase.sort(() => Math.random() - 0.5),
+        playerHitpoints: 20,
+        hand: this.deck.splice(0, 7),
+        cardsInPlay: [],
+        graveyard: [],
+        exile: [],
+        playedLand : false,
+        ManaPool: {
+            w: 0,
+            u: 0,
+            b: 0,
+            r: 0,
+            g: 0,
+            c: 0
+        }
+    }
+
     //const [player, setPlayer] = useState(new Player(deckDatabase))
 
-    const [player, dispatchPlayerActions] = useReducer(playerActions, new Player(deckDatabase))
+    const [player, dispatchPlayerActions] = useReducer(playerActions, playerObject)
 
     function playerActions(state, action){
         let newState;
@@ -96,6 +114,7 @@ const Game = () => {
                 }
                 break;
             default:
+
                 break;
         }
         console.log("new state is", newState)
