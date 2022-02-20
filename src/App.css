@@ -1,0 +1,89 @@
+.Board {
+  background-color: rgb(225, 225, 225);
+  margin: 10px;
+  padding: 10px;
+  border: solid black 1px;
+}
+
+.PlayingZone {
+  display: flex;
+  background-color: bisque;
+  justify-content: left;
+}
+
+.Hand {
+  display: flex;
+  background-color: honeydew;
+  justify-content: space-around;
+}
+
+/* to be removed, unless we inherit properties as a base class */
+.Card {
+  display: flex;
+  background-color: rgb(159, 159, 159);
+  width: 30%;
+	padding-bottom: 25%;
+  padding-left: 2px;
+  padding-right: 2px;
+	/*float: left;*/
+	margin: 1.66%;
+	border-radius: 5%;
+}
+
+.CardInHand {
+  display: flex;
+  background-color: rgb(159, 159, 159);
+  width: 30%;
+	padding-bottom: 25%;
+  padding-left: 2px;
+  padding-right: 2px;
+	/*float: left;*/
+	margin: 1.66%;
+	border-radius: 5%;
+}
+
+.CardInPlay {
+  display: flex;
+  background-color: rgb(159, 159, 159);
+  width: 30%;
+	padding-bottom: 25%;
+  padding-left: 2px;
+  padding-right: 2px;
+	/*float: left;*/
+	margin: 1.66%;
+	border-radius: 5%;
+}
+
+.CardInHand-Header {
+  display: flex;
+  /*justify-content: center;*/
+}
+
+.CardInHand-Art {
+  display: flex;
+}
+
+.CardInHand-Rules {
+  display: flex;
+}
+
+.CardInHand-Footer {
+  display: flex;
+}
+
+.CardInPlay-Header {
+  display: flex;
+  /*justify-content: center;*/
+}
+
+.CardInPlay-Art {
+  display: flex;
+}
+
+.CardInPlay-Rules {
+  display: flex;
+}
+
+.CardInPlay-Footer {
+  display: flex;
+}
