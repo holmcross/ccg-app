@@ -37,7 +37,6 @@ class Player {
     constructor(deckParam){
         this.deck= deckParam.sort(() => Math.random() - 0.5)
         this.playerHitpoints = 20
-
         this.hand = this.deck.splice(0, 7)
         this.cardsInPlay = []
         this.graveyard = []
@@ -63,22 +62,26 @@ class GameState {
 }
 
 const Game = () => {
+    const getInitialDeck = () => {
+        return customDB.map((card, index) => {
+            let cardObj = card;
+            cardObj.id = index
+            return cardObj
+        })
+    }
 
-    var deckDatabase = customDB.map((card, index) => {
-        let cardObj = JSON.parse(JSON.stringify(card))
-        cardObj.id = index
-        return cardObj
-    })
-
-    var playerObject = {
-        deck: deckDatabase.sort(() => Math.random() - 0.5),
+    const shuffleDeck = (deck) => {
+        return deck.sort(() => Math.random() - 0.5)
+    }
+    const initialPlayerObject = {
+        deck: [],
         playerHitpoints: 20,
         hand: this.deck.splice(0, 7),
         cardsInPlay: [],
         graveyard: [],
         exile: [],
-        playedLand : false,
-        ManaPool: {
+        playedLand: false,
+        manaPool: {
             w: 0,
             u: 0,
             b: 0,
@@ -88,9 +91,31 @@ const Game = () => {
         }
     }
 
+    function createPlayerObject(deckParam) {
+        return {
+            deck: [],
+            playerHitpoints: 20,
+            hand: this.deck.splice(0, 7),
+            cardsInPlay: [],
+            graveyard: [],
+            exile: [],
+            playedLand: false,
+            manaPool: {
+                w: 0,
+                u: 0,
+                b: 0,
+                r: 0,
+                g: 0,
+                c: 0
+            }
+        }
+    }
+
+    const playerObj = new playerObject(initialDeck)
+
     //const [player, setPlayer] = useState(new Player(deckDatabase))
 
-    const [player, dispatchPlayerActions] = useReducer(playerActions, playerObject)
+    const [player, dispatchPlayerActions] = useReducer(playerActions, playerObj)
 
     function playerActions(state, action){
         let newState;
