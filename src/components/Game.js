@@ -141,11 +141,11 @@ const Game = () => {
                     ...action.playedCard,
                     tapped: false
                 }
-                // doesn't appear to be sending a correct array back
-                let newCardsInPlay = {
+                
+                let newCardsInPlay = [
                     ...state.playerState.player1.cardsInPlay,
                     newCardInPlay
-                }
+                ]
                 let newHand = state.playerState.player1.hand.filter(cardObj => cardObj.id != action.playedCard.id )
                 let newPlayer1State = {
                     ...state.playerState.player1,
