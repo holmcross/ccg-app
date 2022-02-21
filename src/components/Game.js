@@ -33,25 +33,6 @@ import customDB from "../custom_db.json"
 
 
 
-class Player {
-    constructor(deckParam){
-        this.deck= deckParam.sort(() => Math.random() - 0.5)
-        this.playerHitpoints = 20
-        this.hand = this.deck.splice(0, 7)
-        this.cardsInPlay = []
-        this.graveyard = []
-        this.exile = []
-        this.playedLand = false
-        this.ManaPool ={
-            w: 0,
-            u: 0,
-            b: 0,
-            r: 0,
-            g: 0,
-            c: 0
-        }
-    }
-}
 
 class GameState {
     constructor(){
@@ -76,7 +57,7 @@ const Game = () => {
     const initialPlayerObject = {
         deck: [],
         playerHitpoints: 20,
-        hand: this.deck.splice(0, 7),
+        hand: [],//this.deck.splice(0, 7),
         cardsInPlay: [],
         graveyard: [],
         exile: [],
@@ -91,33 +72,25 @@ const Game = () => {
         }
     }
 
-    function createPlayerObject(deckParam) {
-        return {
-            deck: [],
-            playerHitpoints: 20,
-            hand: this.deck.splice(0, 7),
-            cardsInPlay: [],
-            graveyard: [],
-            exile: [],
-            playedLand: false,
-            manaPool: {
-                w: 0,
-                u: 0,
-                b: 0,
-                r: 0,
-                g: 0,
-                c: 0
+    const initialState = {
+        gameState: {
+            state: "NEWGAME",
+        },
+        playerState: {
+            player1: {
+                ...initialPlayerObject,
+            },
+            player2: {
+                ...initialPlayerObject,
             }
-        }
+        },
     }
 
-    const playerObj = new playerObject(initialDeck)
+    // const playerObj = new playerObject(initialDeck)
 
     //const [player, setPlayer] = useState(new Player(deckDatabase))
 
-    const [player, dispatchPlayerActions] = useReducer(playerActions, playerObj)
-
-    function playerActions(state, action){
+    const playerActions = (state, action) => {
         let newState;
         switch(action.type){
             case "PLAY_CARD_FROM_HAND":
@@ -130,13 +103,58 @@ const Game = () => {
                     ...state.cardsInPlay,
                     newCardInPlay
                 }
-                let newHand = state.hand
-                newHand.filter(cardObj => cardObj.id != action.playedCard.id )
+                let newHand = state.playerState.player1.hand
+                console.log("hand contains", newHand)
+                //newHand.filter(cardObj => cardObj.id != action.playedCard.id )
+
                 newState = {
                     ...state,
-                    cardsInPlay: newCardsInPlay,
-                    hand: newHand
+                    gameState: "startGame",
+                    playerState: {
+                        player1: {
+                            ...state.playerState.player1,
+                            deck: player1Deck,
+                            hand: newHand,
+                        },
+                        player2: {
+                            ...state.playerState.player1,
+                            deck: player2Deck,
+                            hand: player2Hand,
+                        }
+                    }
                 }
+                //     state: {
+                //         ...state,
+                //         cardsInPlay: newCardsInPlay,
+                //         hand: newHand
+                //     }
+                // }
+                break;
+            case "START_GAME":
+                console.log("startGame")
+                const player1Deck = shuffleDeck(getInitialDeck())
+                const player2Deck = shuffleDeck(getInitialDeck())
+                const player1Hand = player1Deck.splice(0, 7); 
+                const player2Hand = player2Deck.splice(0, 7); 
+
+                console.log("generating newState")
+                newState = {
+                    ...state,
+                    gameState: "startGame",
+                    playerState: {
+                        player1: {
+                            ...state.playerState.player1,
+                            deck: player1Deck,
+                            hand: player1Hand,
+                        },
+                        player2: {
+                            ...state.playerState.player1,
+                            deck: player2Deck,
+                            hand: player2Hand,
+                        }
+                    }
+                }
+                console.log(newState);
                 break;
             default:
 
@@ -145,6 +163,8 @@ const Game = () => {
         console.log("new state is", newState)
         return newState
     }
+    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
+
     /*
     const [hand, setHand] = useState(player.hand)
     const [cardsInPlay, setCardsInPlay] = useState([])
@@ -193,12 +213,15 @@ const Game = () => {
     }
     */
 
-    return <div class="Board">
+    return <div className="Board">
+    <button onClick={() => dispatchPlayerActions({type: "START_GAME"})}>
+        START Game
+    </button>
     <PlayingZone
-        cardsInPlayProps={player.cardsInPlay}
+        cardsInPlayProps={state.playerState.player1.cardsInPlay}
     />
     <Hand
-        handProps={player.hand}
+        handProps={state.playerState.player1.hand}
         dispatchPlayerActionsProps={dispatchPlayerActions}
     />
 </div>

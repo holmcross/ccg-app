@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 
 const CardInPlay = (props) => {
-    return <div class="CardInPlay">
-        <div class="CardInPlay-Header">
+    return <div className="CardInPlay">
+        <div className="CardInPlay-Header">
             {props.cardProps.name}
         </div>
 
