@@ -13,7 +13,6 @@ import customDB from "../custom_db.json"
 
     /*
     //reducer example
-
     const reducerFunc = (state,action) => {
         console.log('we done it')
         switch(action){
@@ -23,7 +22,6 @@ import customDB from "../custom_db.json"
                 return state
         }
     }
-
     const [myNewState, dispatcher] = useReducer(reducerFunc, 10) // the initial state should be a literal
    
     // () => dispatcher('increment') is called somewhere
@@ -64,16 +62,22 @@ class GameState {
 
 const Game = () => {
 
-    var deckDatabase = customDB.map((card, index) => {
-        let cardObj = JSON.parse(JSON.stringify(card))
-        cardObj.id = index
-        return cardObj
-    })
+    const getInitialDeck = () => {
+        return customDB.map((card, index) => {
+            let cardObj = card
+            cardObj.id = index
+            return cardObj
+        })
+    }
 
-    var playerObject = {
-        deck: deckDatabase.sort(() => Math.random() - 0.5),
+    const shuffleDeck = (deck) => {
+        return deck.sort(() => Math.random() - 0.5)
+    }
+
+    const initialPlayerObject = {
+        deck: [],
         playerHitpoints: 20,
-        hand: this.deck.splice(0, 7),
+        hand: [],
         cardsInPlay: [],
         graveyard: [],
         exile: [],
@@ -88,34 +92,77 @@ const Game = () => {
         }
     }
 
-    //const [player, setPlayer] = useState(new Player(deckDatabase))
+    const initialState = {
+        gameState: {
+            state: "NEWGAME",
+        },
+        playerState: {
+            player1: {
+                ...initialPlayerObject,
+            },
+            player2: {
+                ...initialPlayerObject,
+            }
+        },
+    }
 
-    const [player, dispatchPlayerActions] = useReducer(playerActions, playerObject)
+
+    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
     function playerActions(state, action){
-        let newState;
+        let newState
         switch(action.type){
+            case "SETUP_GAME":
+                console.log("Starting up game...")
+                const player1Deck = shuffleDeck(getInitialDeck())
+                const player2Deck = shuffleDeck(getInitialDeck())
+                const player1Hand = player1Deck.splice(0, 7) 
+                const player2Hand = player2Deck.splice(0, 7)
+
+                newState = {
+                    ...state,
+                    playerState: {
+                        player1: {
+                            ...state.playerState.player1,
+                            deck: player1Deck,
+                            hand: player1Hand,
+                        },
+                        player2: {
+                            ...state.playerState.player2,
+                            deck: player2Deck,
+                            hand: player2Hand,
+                        }
+                    }
+                }
+                break
             case "PLAY_CARD_FROM_HAND":
                 console.log ('played card id', action.playedCard.id)
                 let newCardInPlay = {
                     ...action.playedCard,
                     tapped: false
                 }
+                // doesn't appear to be sending a correct array back
                 let newCardsInPlay = {
-                    ...state.cardsInPlay,
+                    ...state.playerState.player1.cardsInPlay,
                     newCardInPlay
                 }
-                let newHand = state.hand
-                newHand.filter(cardObj => cardObj.id != action.playedCard.id )
+                let newHand = state.playerState.player1.hand.filter(cardObj => cardObj.id != action.playedCard.id )
+                let newPlayer1State = {
+                    ...state.playerState.player1,
+                    hand: newHand,
+                    cardsInPlay: newCardsInPlay
+                }
+                let newPlayerState = {
+                    ...state.playerState,
+                    player1: newPlayer1State
+                }
                 newState = {
                     ...state,
-                    cardsInPlay: newCardsInPlay,
-                    hand: newHand
+                    playerState: newPlayerState
                 }
-                break;
+                break
             default:
-
-                break;
+                break
         }
         console.log("new state is", newState)
         return newState
@@ -123,8 +170,6 @@ const Game = () => {
     /*
     const [hand, setHand] = useState(player.hand)
     const [cardsInPlay, setCardsInPlay] = useState([])
-
-
     const tapCard = id => {
         setCardsInPlay(
             cardsInPlay.map(card => {
@@ -139,28 +184,20 @@ const Game = () => {
             })
         )
     }
-
-
     function putCardInPlay(cardObjParam){
         var newCardInPlay = {
             ...cardObjParam,
             tapped: false
         }
-
         setCardsInPlay([
             ...cardsInPlay,
             newCardInPlay
         ])
-
         console.log("the following cards are now in play:". cardsInPlay)
     }
-
-
     const playCardFromHand = (playedCardObj) => {
         console.log(playedCardObj.name, "was played")
-
         putCardInPlay(playedCardObj)
-
         setHand(
             hand.filter(cardObj => cardObj.id != playedCardObj.id )
         )
@@ -168,15 +205,18 @@ const Game = () => {
     }
     */
 
-    return <div class="Board">
-    <PlayingZone
-        cardsInPlayProps={player.cardsInPlay}
-    />
-    <Hand
-        handProps={player.hand}
-        dispatchPlayerActionsProps={dispatchPlayerActions}
-    />
-</div>
+    return <div>
+        <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
+        <div class="Board">
+            <PlayingZone
+                cardsInPlayProps={state.playerState.player1.cardsInPlay}
+            />
+            <Hand
+                handProps={state.playerState.player1.hand}
+                dispatchPlayerActionsProps={dispatchPlayerActions}
+            />
+        </div>
+    </div>
 }
 
 export default Game
