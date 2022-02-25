@@ -5,7 +5,7 @@ const CardInPlay = (props) => {
         <div class="CardInPlay-Header">
             {props.cardProps.name}
         </div>
-
+        {props.cardProps.type === 1 && <div>{props.cardProps.power}/{props.cardProps.toughness}</div>}
     </div>
 }
 

@@ -7,6 +7,8 @@ const Hand = (props) => {
             <CardInHand 
                 cardProps={card} 
                 dispatchPlayerActionsProps={props.dispatchPlayerActionsProps}
+                castSpellProps={props.castSpellProps}
+                playLandProps={props.playLandProps}
             /> 
         )}
     </div>

@@ -3,14 +3,6 @@ import Hand from "./Hand"
 import PlayingZone from "./PlayingZone"
 import customDB from "../custom_db.json"
 
-//rather then passing objects around components, it would be better if keys/identitifers were passed
-//  and those components could access needed info from a single source (hash)
-
-//cards need two forms of identitifers, one to identify what card it is, and another to distinguish
-//  between multiple copies. At the moment we are matching based on name.
-//  a possible solution is to match based on "<card_name>" + "<copy_number>"
-
-
     /*
     //reducer example
     const reducerFunc = (state,action) => {
@@ -22,42 +14,15 @@ import customDB from "../custom_db.json"
                 return state
         }
     }
-    const [myNewState, dispatcher] = useReducer(reducerFunc, 10) // the initial state should be a literal
-   
-    // () => dispatcher('increment') is called somewhere
-    
-    console.log("state reducer is", myNewState)
     */
 
-
-
-class Player {
-    constructor(deckParam){
-        this.deck= deckParam.sort(() => Math.random() - 0.5)
-        this.playerHitpoints = 20
-
-        this.hand = this.deck.splice(0, 7)
-        this.cardsInPlay = []
-        this.graveyard = []
-        this.exile = []
-        this.playedLand = false
-        this.ManaPool ={
-            w: 0,
-            u: 0,
-            b: 0,
-            r: 0,
-            g: 0,
-            c: 0
-        }
-    }
-}
-
-class GameState {
-    constructor(){
-        //this should be ENUMS
-        this.currentPhase = ""
-        this.activePlayer = ""
-    }
+const COLORS = {
+    w: 0,
+    u: 1,
+    b: 2,
+    r: 3,
+    g: 4,
+    c: 5
 }
 
 const Game = () => {
@@ -74,7 +39,7 @@ const Game = () => {
         return deck.sort(() => Math.random() - 0.5)
     }
 
-    const initialPlayerObject = {
+    const playerObject = {
         deck: [],
         playerHitpoints: 20,
         hand: [],
@@ -95,125 +60,189 @@ const Game = () => {
     const initialState = {
         gameState: {
             state: "NEWGAME",
+            activePlayer: "PLAYER_1"
         },
         playerState: {
-            player1: {
-                ...initialPlayerObject,
-            },
-            player2: {
-                ...initialPlayerObject,
+            player: {
+                ...playerObject,
             }
         },
     }
 
-
     const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
     function playerActions(state, action){
-        let newState
+        let newState, newCardInPlay, newCardsInPlay, newHand, newManaPool, newIndividualPlayerState, newPlayerState
+
         switch(action.type){
             case "SETUP_GAME":
                 console.log("Starting up game...")
-                const player1Deck = shuffleDeck(getInitialDeck())
-                const player2Deck = shuffleDeck(getInitialDeck())
-                const player1Hand = player1Deck.splice(0, 7) 
-                const player2Hand = player2Deck.splice(0, 7)
+                const playerDeck = shuffleDeck(getInitialDeck())
+                const playerHand = playerDeck.splice(0, 7) 
 
                 newState = {
                     ...state,
                     playerState: {
-                        player1: {
-                            ...state.playerState.player1,
-                            deck: player1Deck,
-                            hand: player1Hand,
-                        },
-                        player2: {
-                            ...state.playerState.player2,
-                            deck: player2Deck,
-                            hand: player2Hand,
+                        player: {
+                            ...state.playerState.player,
+                            deck: playerDeck,
+                            hand: playerHand,
                         }
                     }
                 }
+                newState.playerState.player.ManaPool.b = 4
                 break
+
             case "PLAY_CARD_FROM_HAND":
                 console.log ('played card id', action.playedCard.id)
-                let newCardInPlay = {
+                newCardInPlay = {
                     ...action.playedCard,
                     tapped: false
                 }
                 
-                let newCardsInPlay = [
-                    ...state.playerState.player1.cardsInPlay,
+                newCardsInPlay = [
+                    ...state.playerState.player.cardsInPlay,
                     newCardInPlay
                 ]
-                let newHand = state.playerState.player1.hand.filter(cardObj => cardObj.id != action.playedCard.id )
-                let newPlayer1State = {
-                    ...state.playerState.player1,
-                    hand: newHand,
-                    cardsInPlay: newCardsInPlay
+
+                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
+                
+                newManaPool = state.playerState.player.ManaPool
+                for(const manaPip in action.newPlayerManaPool){
+                    newManaPool[manaPip] = action.newPlayerManaPool[manaPip]
                 }
-                let newPlayerState = {
+                
+                newIndividualPlayerState = {
+                    ...state.playerState.player,
+                    hand: newHand,
+                    cardsInPlay: newCardsInPlay,
+                    ManaPool: newManaPool
+                }
+                newPlayerState = {
                     ...state.playerState,
-                    player1: newPlayer1State
+                    player: newIndividualPlayerState
                 }
                 newState = {
                     ...state,
                     playerState: newPlayerState
                 }
                 break
+
+            case "PLAY_LAND_FROM_HAND":
+                console.log ('played card id', action.playedCard.id)
+                newCardInPlay = {
+                    ...action.playedCard,
+                    tapped: false
+                }
+                
+                newCardsInPlay = [
+                    ...state.playerState.player.cardsInPlay,
+                    newCardInPlay
+                ]
+
+                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
+                
+                newIndividualPlayerState = {
+                    ...state.playerState.player,
+                    hand: newHand,
+                    cardsInPlay: newCardsInPlay,
+                    playedLand: true
+                }
+                newPlayerState = {
+                    ...state.playerState,
+                    player: newIndividualPlayerState
+                }
+                newState = {
+                    ...state,
+                    playerState: newPlayerState
+                }
+                break
+
+            case "TAP_CARD":
+                newCardInPlay = {
+                    ...action.tappedCard,
+                    tapped: true
+                }
+                newCardsInPlay = {
+                    ...state.playerState.player.cardsInPlay,
+                    newCardInPlay
+                }
+                if(action.tappedCard.type === 0){
+                    newManaPool = state.playerState.player.ManaPool
+                    newManaPool[action.playedCard.color]++
+
+                    newIndividualPlayerState = {
+                        ...state.playerState.player,
+                        ManaPool: newManaPool,
+                        cardsInPlay: newCardInPlay
+                    }
+                }else{
+                    newIndividualPlayerState = {
+                        ...state.playerState.player,
+                        cardsInPlay: newCardInPlay
+                    }
+                }
+                    
+                newPlayerState = {
+                        ...state.playerState,
+                        player: newIndividualPlayerState
+                    }
+                newState = {
+                    ...state,
+                    playerState: newPlayerState
+                }
             default:
                 break
         }
         console.log("new state is", newState)
         return newState
     }
-    /*
-    const [hand, setHand] = useState(player.hand)
-    const [cardsInPlay, setCardsInPlay] = useState([])
-    const tapCard = id => {
-        setCardsInPlay(
-            cardsInPlay.map(card => {
-                if(card.id === id){
-                    console.log('Tapped', card.name)
-                    return{
-                        ...card,
-                        tapped: !card.tapped
-                    }
-                }
-                return card
-            })
-        )
-    }
-    function putCardInPlay(cardObjParam){
-        var newCardInPlay = {
-            ...cardObjParam,
-            tapped: false
+
+    const attemptToCastSpell = (card) => {
+
+        let flag = 1
+        let newPlayerManaPool = {}
+        for(const manaPip in card.manaCost){
+
+            if (state.playerState.player.ManaPool[manaPip] < card.manaCost[manaPip]){
+                flag = 0
+            }else{
+                newPlayerManaPool[manaPip] = state.playerState.player.ManaPool[manaPip] - card.manaCost[manaPip]
+            }
+            if (!flag) {break}
         }
-        setCardsInPlay([
-            ...cardsInPlay,
-            newCardInPlay
-        ])
-        console.log("the following cards are now in play:". cardsInPlay)
+        if (flag) {dispatchPlayerActions({
+            type:"PLAY_CARD_FROM_HAND", playedCard:card, newPlayerManaPool: newPlayerManaPool})
+        }else{
+            console.log("Insufficent mana to play", card.name)
+        }
     }
-    const playCardFromHand = (playedCardObj) => {
-        console.log(playedCardObj.name, "was played")
-        putCardInPlay(playedCardObj)
-        setHand(
-            hand.filter(cardObj => cardObj.id != playedCardObj.id )
-        )
-        console.log("Hand now contains", hand)
+
+    const attemptToPlayLand = (card) => {
+        if(!state.playerState.player.playedLand){
+            dispatchPlayerActions({type:"PLAY_LAND_FROM_HAND", playedCard: card})
+        }
+        else{
+            console.log("You cannot play this land")
+        }
     }
-    */
+
+    const tapCard = (card) => {
+        dispatchPlayerActions({type:"TAP_CARD", tappedCard:card})
+    }
 
     return <div>
         <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
         <div class="Board">
             <PlayingZone
-                cardsInPlayProps={state.playerState.player1.cardsInPlay}
+                cardsInPlayProps={state.playerState.player.cardsInPlay}
             />
             <Hand
-                handProps={state.playerState.player1.hand}
+                handProps={state.playerState.player.hand}
                 dispatchPlayerActionsProps={dispatchPlayerActions}
+                castSpellProps={attemptToCastSpell}
+                playLandProps={attemptToPlayLand}
+                tapLandProps=[]
             />
         </div>
     </div>
