@@ -3,8 +3,8 @@ import React, { useState } from 'react'
 const CardInPlay = (props) => {
     // creature
     if (props.cardProps.type === 1){
-        return (<div class="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
-            <div class="CardInPlay-Header">
+        return (<div className="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
+            <div className="CardInPlay-Header">
                 {props.cardProps.name}
             </div>
             <div>{props.cardProps.power}/{props.cardProps.toughness}</div>
@@ -12,8 +12,8 @@ const CardInPlay = (props) => {
     } 
     // land
     else if(props.cardProps.type === 0){
-        return (<div class="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
-            <div class="CardInPlay-Header">
+        return (<div className="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
+            <div className="CardInPlay-Header">
                 {props.cardProps.name}
             </div>
         </div>)

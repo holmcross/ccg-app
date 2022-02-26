@@ -75,7 +75,12 @@ const Game = () => {
     const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
     function playerActions(state, action){
-        let newState, newCardInPlay, newCardsInPlay, newHand, newManaPool, newIndividualPlayerState, newPlayerState
+        let newState = {};
+        let newCardInPlay = {};
+        let newCardsInPlay = {};
+        let newHand = {};
+        let newIndividualPlayerState = {};
+        let newPlayerState = {};
 
         switch(action.type){
             case "SETUP_GAME":
@@ -110,7 +115,7 @@ const Game = () => {
 
                 newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
                 
-                newManaPool = state.playerState.player.ManaPool
+                let newManaPool = state.playerState.player.ManaPool
                 for(const manaPip in action.newPlayerManaPool){
                     newManaPool[manaPip] = action.newPlayerManaPool[manaPip]
                 }
@@ -143,7 +148,7 @@ const Game = () => {
                     newCardInPlay
                 ]
 
-                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
+                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id !== action.playedCard.id )
                 
                 newIndividualPlayerState = {
                     ...state.playerState.player,
@@ -173,9 +178,15 @@ const Game = () => {
 
                 // if the tapped card was a land, add mana
                 if(action.tappedCard.type === 0){
-                    newManaPool = state.playerState.player.ManaPool
-                    console.log("Tapped color is", action.tappedCard.color)
-                    newManaPool[action.tappedCard.color]++
+                    // I use const here just to tell myself I won't change these directly
+                    const manaPool = state.playerState.player.ManaPool
+                    const color = action.tappedCard.color
+                    const newManaPool = {
+                        ...manaPool,
+                        // Here, I add 1 to a reference of the property, instead of incrementing the property
+                        [color]: manaPool[color] + 1 
+
+                    }
 
                     newIndividualPlayerState = {
                         ...state.playerState.player,
@@ -189,14 +200,14 @@ const Game = () => {
                     }
                 }
                     
-                newPlayerState = {
-                        ...state.playerState,
-                        player: newIndividualPlayerState
-                    }
                 newState = {
                     ...state,
-                    playerState: newPlayerState
+                    playerState: {
+                        ...state.playerState,
+                        player: newIndividualPlayerState,
+                    }
                 }
+                break;
             default:
                 break
         }
@@ -241,7 +252,7 @@ const Game = () => {
 
     return <div>
         <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
-        <div class="Board">
+        <div className="Board">
             <PlayingZone
                 cardsInPlayProps={state.playerState.player.cardsInPlay}
                 tapCardProps={tapCard}
