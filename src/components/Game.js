@@ -165,12 +165,13 @@ const Game = () => {
 
                 console.log("Tapping card")
 
+                // find the card that was tapped, and set the tapped the attribute
                 newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
                     if(card.id === action.tappedCard.id){ card.tapped = true }
                     return card
                 })
 
-
+                // if the tapped card was a land, add mana
                 if(action.tappedCard.type === 0){
                     newManaPool = state.playerState.player.ManaPool
                     console.log("Tapped color is", action.tappedCard.color)
@@ -181,7 +182,7 @@ const Game = () => {
                         ManaPool: newManaPool,
                         cardsInPlay: newCardsInPlay
                     }
-                }else{
+                }else{ // is creature, add no mana
                     newIndividualPlayerState = {
                         ...state.playerState.player,
                         cardsInPlay: newCardsInPlay
@@ -199,7 +200,7 @@ const Game = () => {
             default:
                 break
         }
-        console.log("newState is from the reducer action", action.type, "is", newState)
+        console.log("newState returned from reducer action", action.type, "is", newState)
         return newState
     }
 
