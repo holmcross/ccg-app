@@ -4,7 +4,7 @@ import PlayingZone from "./PlayingZone"
 import customDB from "../custom_db.json"
 
     /*
-    //reducer example
+    //reducer example:
     const reducerFunc = (state,action) => {
         console.log('we done it')
         switch(action){
@@ -14,6 +14,9 @@ import customDB from "../custom_db.json"
                 return state
         }
     }
+
+    condtional example for JSX:
+    {(conditional expression)) && (code to return if true)}
     */
 
 const COLORS = {
@@ -159,27 +162,29 @@ const Game = () => {
                 break
 
             case "TAP_CARD":
-                newCardInPlay = {
-                    ...action.tappedCard,
-                    tapped: true
-                }
-                newCardsInPlay = {
-                    ...state.playerState.player.cardsInPlay,
-                    newCardInPlay
-                }
+
+                console.log("Tapping card")
+
+                newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
+                    if(card.id === action.tappedCard.id){ card.tapped = true }
+                    return card
+                })
+
+
                 if(action.tappedCard.type === 0){
                     newManaPool = state.playerState.player.ManaPool
-                    newManaPool[action.playedCard.color]++
+                    console.log("Tapped color is", action.tappedCard.color)
+                    newManaPool[action.tappedCard.color]++
 
                     newIndividualPlayerState = {
                         ...state.playerState.player,
                         ManaPool: newManaPool,
-                        cardsInPlay: newCardInPlay
+                        cardsInPlay: newCardsInPlay
                     }
                 }else{
                     newIndividualPlayerState = {
                         ...state.playerState.player,
-                        cardsInPlay: newCardInPlay
+                        cardsInPlay: newCardsInPlay
                     }
                 }
                     
@@ -194,7 +199,7 @@ const Game = () => {
             default:
                 break
         }
-        console.log("new state is", newState)
+        console.log("newState is from the reducer action", action.type, "is", newState)
         return newState
     }
 
@@ -228,7 +233,9 @@ const Game = () => {
     }
 
     const tapCard = (card) => {
-        dispatchPlayerActions({type:"TAP_CARD", tappedCard:card})
+        if(!card.tapped){
+            dispatchPlayerActions({type:"TAP_CARD", tappedCard:card})
+        }
     }
 
     return <div>
@@ -236,13 +243,13 @@ const Game = () => {
         <div class="Board">
             <PlayingZone
                 cardsInPlayProps={state.playerState.player.cardsInPlay}
+                tapCardProps={tapCard}
             />
             <Hand
                 handProps={state.playerState.player.hand}
                 dispatchPlayerActionsProps={dispatchPlayerActions}
                 castSpellProps={attemptToCastSpell}
                 playLandProps={attemptToPlayLand}
-                tapLandProps=[]
             />
         </div>
     </div>

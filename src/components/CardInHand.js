@@ -7,7 +7,7 @@ const CardInHand = (props) => {
                 props.castSpellProps(props.cardProps)}>
                     <div class="CardInHand-Header">
                         {props.cardProps.name}
-                        {props.cardProps.type === 1 && props.cardProps.printableManaCost}
+                        {props.cardProps.printableManaCost}
                     </div>
             </div>
     } else if (props.cardProps.type === 0) {
@@ -16,7 +16,6 @@ const CardInHand = (props) => {
                 props.playLandProps(props.cardProps)}>
                     <div class="CardInHand-Header">
                         {props.cardProps.name}
-                        {props.cardProps.type === 1 && props.cardProps.printableManaCost}
                     </div>
             </div>  
     }

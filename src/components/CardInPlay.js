@@ -1,12 +1,23 @@
 import React, { useState } from 'react'
 
 const CardInPlay = (props) => {
-    return <div class="CardInPlay">
-        <div class="CardInPlay-Header">
-            {props.cardProps.name}
-        </div>
-        {props.cardProps.type === 1 && <div>{props.cardProps.power}/{props.cardProps.toughness}</div>}
-    </div>
+    // creature
+    if (props.cardProps.type === 1){
+        return (<div class="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
+            <div class="CardInPlay-Header">
+                {props.cardProps.name}
+            </div>
+            <div>{props.cardProps.power}/{props.cardProps.toughness}</div>
+        </div>)
+    } 
+    // land
+    else if(props.cardProps.type === 0){
+        return (<div class="CardInPlay" onClick={()=> props.tapCardProps(props.cardProps)}>
+            <div class="CardInPlay-Header">
+                {props.cardProps.name}
+            </div>
+        </div>)
+    }
 }
 
 export default CardInPlay
