@@ -70,6 +70,7 @@ const Game = () => {
                 ...playerObject,
             }
         },
+        aiState: {}
     }
 
     const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
@@ -100,6 +101,12 @@ const Game = () => {
                 }
                 newState.playerState.player.ManaPool.b = 4
                 break
+
+            case "END_TURN":
+                newCardsInPlay = state.playerState.player.cardsInPlay.map(card => {
+                    if(card.tapped){card.tapped = false}
+                    return card
+                })
 
             case "PLAY_CARD_FROM_HAND":
                 console.log ('played card id', action.playedCard.id)
