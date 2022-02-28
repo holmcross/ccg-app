@@ -31,7 +31,8 @@
 	margin: 1.66%;
 	border-radius: 5%;
 }
-@mixin card {
+
+.CardInHand {
   display: flex;
   min-width: 125px;
   min-height: 175px;
@@ -42,17 +43,25 @@
   transition: transform .25s;
   cursor: pointer;
   position: relative;
-  &:hover {
-    transform: scale(1.2);
-  }
 }
-
-.CardInHand {
-  @include card;
+.CardInHand:hover {
+  transform: scale(1.2);
 }
 
 .CardInPlay {
-  @include card;
+  display: flex;
+  min-width: 125px;
+  min-height: 175px;
+  max-width: 125px;
+  background-color: rgb(159, 159, 159);
+  background-image: url('./components/images/black.template.png');
+  background-size: contain;
+  transition: transform .25s;
+  cursor: pointer;
+  position: relative;
+}
+.CardInPlay:hover {
+  transform: scale(1.2);
 }
 
 .Card-Header {
