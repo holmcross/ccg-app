@@ -31,8 +31,8 @@ const COLORS = {
 
 const Game = () => {
 
-    const getInitialDeck = () => {
-        return customDB.map((card, index) => {
+    const getInitialDeck = (customDBParam) => {
+        return customDBParam.map((card, index) => {
             let cardObj = card
             cardObj.id = index
             return cardObj
@@ -43,40 +43,39 @@ const Game = () => {
         return deck.sort(() => Math.random() - 0.5)
     }
 
-    const playerObject = {
-        deck: [],
-        playerHitpoints: 20,
-        hand: [],
-        cardsInPlay: [],
-        graveyard: [],
-        exile: [],
-        playedLand: false,
-        turn: 0,
-        ManaPool: {
-            w: 0,
-            u: 0,
-            b: 0,
-            r: 0,
-            g: 0,
-            c: 0
+
+
+ 
+    function getInitialState () {
+        this.gameState = {
+            state: "",
+            activePlayer: "",
+            turn: 0
+        };
+        this.playerState = {
+            player: {
+                deck: [],
+                playerHitpoints: 20,
+                hand: [],
+                cardsInPlay: [],
+                graveyard: [],
+                exile: [],
+                playedLand: false,
+                turn: 0,
+                ManaPool: {
+                    w: 0,
+                    u: 0,
+                    b: 0,
+                    r: 0,
+                    g: 0,
+                    c: 0
+                }
+            }
         }
     }
 
-    const initialState = {
-        gameState: {
-            state: "NEW_GAME",
-            activePlayer: "PLAYER_1",
-            turn: 0
-        },
-        playerState: {
-            player: {
-                ...playerObject,
-            }
-        },
-        aiState: {}
-    }
+    const [state, dispatchPlayerActions] = useReducer(playerActions, new getInitialState())
 
-    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
     function playerActions(state, action){
         let newState = {};
@@ -91,7 +90,7 @@ const Game = () => {
         switch(action.type){
             case "SETUP_GAME":
                 console.log("Starting up game...")
-                const playerDeck = shuffleDeck(getInitialDeck())
+                const playerDeck = shuffleDeck(getInitialDeck(customDB))
                 const playerHand = playerDeck.splice(0, 7) 
 
                 newState = {
@@ -105,7 +104,6 @@ const Game = () => {
                         }
                     }
                 }
-                //newState.playerState.player.ManaPool.b = 4
                 break
 
             case "BEGIN_TURN":
