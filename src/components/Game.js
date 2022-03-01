@@ -1,6 +1,7 @@
 import React, { useReducer, useState } from 'react'
-import Hand from "./Hand"
-import PlayingZone from "./PlayingZone"
+import Hand from './Hand'
+import PlayingZone from './PlayingZone'
+import ManaPoolHUD  from './ManaPoolHUD'
 import customDB from "../custom_db.json"
 
     /*
@@ -311,6 +312,7 @@ const Game = () => {
         <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
         <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
         Turn: {state.playerState.player.turn}
+        <ManaPoolHUD manaPoolProps={state.playerState.player.ManaPool} />
         <div className="Board">
             <PlayingZone
                 cardsInPlayProps={state.playerState.player.cardsInPlay}
