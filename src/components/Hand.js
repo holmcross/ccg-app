@@ -2,6 +2,7 @@ import React from "react";
 import CardInHand from "./CardInHand";
 
 const Hand = (props) => {
+    console.log(props.handProps)
     return <div className="Hand">
         {props.handProps.map( (card, index) =>
             <CardInHand 

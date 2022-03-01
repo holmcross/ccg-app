@@ -13,6 +13,7 @@ const CardInHand = (props) => {
                         )}
                         </div>
                     </div>
+                <div className="Card-PT" style={{}}>{props.cardProps.power}/{props.cardProps.toughness}</div>
             </div>
     } else if (props.cardProps.type === 0) {
         return <div className="CardInHand" 

@@ -49,7 +49,8 @@ const Game = () => {
         cardsInPlay: [],
         graveyard: [],
         exile: [],
-        playedLand : false,
+        playedLand: false,
+        turn: 0,
         ManaPool: {
             w: 0,
             u: 0,
@@ -62,8 +63,9 @@ const Game = () => {
 
     const initialState = {
         gameState: {
-            state: "NEWGAME",
-            activePlayer: "PLAYER_1"
+            state: "NEW_GAME",
+            activePlayer: "PLAYER_1",
+            turn: 0
         },
         playerState: {
             player: {
@@ -78,10 +80,12 @@ const Game = () => {
     function playerActions(state, action){
         let newState = {};
         let newCardInPlay = {};
-        let newCardsInPlay = {};
-        let newHand = {};
+        let newCardsInPlay = [];
+        let newCardInHand = {};
+        let newHand = [];
         let newIndividualPlayerState = {};
         let newPlayerState = {};
+        let newDeck = [];
 
         switch(action.type){
             case "SETUP_GAME":
@@ -96,18 +100,60 @@ const Game = () => {
                             ...state.playerState.player,
                             deck: playerDeck,
                             hand: playerHand,
+                            turn: 1
                         }
                     }
                 }
-                newState.playerState.player.ManaPool.b = 4
+                //newState.playerState.player.ManaPool.b = 4
                 break
 
-            case "END_TURN":
+            case "BEGIN_TURN":
                 newCardsInPlay = state.playerState.player.cardsInPlay.map(card => {
                     if(card.tapped){card.tapped = false}
                     return card
                 })
 
+                newDeck = structuredClone(state.playerState.player.deck)
+
+                newCardInHand = newDeck.shift()
+                
+                newHand = [
+                    ...state.playerState.player.hand,
+                    newCardInHand
+                ]
+
+                const newTurn = state.playerState.player.turn + 1
+
+                newIndividualPlayerState = {
+                    ...state.playerState.player,
+                    hand: newHand,
+                    cardsInPlay: newCardsInPlay,
+                    deck: newDeck,
+                    playedLand: false,
+                    turn: newTurn,
+                    ManaPool: {
+                        w: 0,
+                        u: 0,
+                        b: 0,
+                        r: 0,
+                        g: 0,
+                        c: 0
+                    }
+                }
+
+                newPlayerState = {
+                    ...state.playerState,
+                    player: newIndividualPlayerState
+                }
+
+                newState = {
+                    ...state,
+                    playerState: newPlayerState
+                }
+                break
+
+            // this accepts 'action.newPlayerManaPool' which is the remaining mana in the player 
+            //  mana pool after the casting cost has been paid
             case "PLAY_CARD_FROM_HAND":
                 console.log ('played card id', action.playedCard.id)
                 newCardInPlay = {
@@ -122,7 +168,9 @@ const Game = () => {
 
                 newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
                 
-                let newManaPool = state.playerState.player.ManaPool
+                // pays the cost of the card
+                // let newManaPool = {...state.playerState.player.ManaPool}
+                let newManaPool = structuredClone(state.playerState.player.ManaPool)
                 for(const manaPip in action.newPlayerManaPool){
                     newManaPool[manaPip] = action.newPlayerManaPool[manaPip]
                 }
@@ -222,6 +270,8 @@ const Game = () => {
         return newState
     }
 
+    // check if player can pay the mana for a spell, and if so calculate the new mana pool
+    //  after casting cost has been spent
     const attemptToCastSpell = (card) => {
 
         let flag = 1
@@ -259,6 +309,8 @@ const Game = () => {
 
     return <div>
         <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
+        <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
+        Turn: {state.playerState.player.turn}
         <div className="Board">
             <PlayingZone
                 cardsInPlayProps={state.playerState.player.cardsInPlay}

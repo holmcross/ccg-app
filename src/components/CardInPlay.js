@@ -11,6 +11,7 @@ const CardInPlay = (props) => {
                     props.cardProps.printableManaCost?.toLowerCase(), item => <Mana symbol={item}/>
                 )}</div>
             </div>
+            {(props.cardProps.tapped) && "TAPPED"}
             <div className="Card-PT" style={{}}>{props.cardProps.power}/{props.cardProps.toughness}</div>
         </div>)
     } 
@@ -20,6 +21,7 @@ const CardInPlay = (props) => {
             <div className="Card-Header">
                 {props.cardProps.name}
             </div>
+            {(props.cardProps.tapped) && "TAPPED"}
         </div>)
     }
 }
