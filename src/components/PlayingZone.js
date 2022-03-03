@@ -22,7 +22,7 @@ const PlayingZone = (props) => {
     console.log("lands contains", lands)
 
     return <div className="PlayingZone">
-        <div>
+        <div className="PlayingZone-Creatures">
             {creatures.map((card, index) => 
                 <CardInPlay 
                     cardProps={card}
@@ -31,7 +31,7 @@ const PlayingZone = (props) => {
                 />
             )}
         </div>
-        <div>
+        <div className="PlayingZone-Lands">
             {lands.map((card, index) => 
                 <CardInPlay 
                     cardProps={card}

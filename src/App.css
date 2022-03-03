@@ -7,7 +7,20 @@
 
 .PlayingZone {
   display: flex;
+  flex-direction: column;
   background-color: bisque;
+  justify-content: left;
+  column-gap: 8px;
+}
+
+.PlayingZone-Creatures{
+  display: flex;
+  justify-content: left;
+  column-gap: 8px;
+}
+
+.PlayingZone-Lands {
+  display: flex;
   justify-content: left;
   column-gap: 8px;
 }
