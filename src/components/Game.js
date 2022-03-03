@@ -31,26 +31,11 @@ const COLORS = {
 
 const Game = () => {
 
-    const getInitialDeck = (customDBParam) => {
-        return customDBParam.map((card, index) => {
-            let cardObj = card
-            cardObj.id = index
-            return cardObj
-        })
-    }
-
-    const shuffleDeck = (deck) => {
-        return deck.sort(() => Math.random() - 0.5)
-    }
-
-
-
- 
+    /*
     function getInitialState () {
         this.gameState = {
-            state: "",
-            activePlayer: "",
-            turn: 0
+            currentState: "",
+            activePlayer: ""
         };
         this.playerState = {
             player: {
@@ -73,8 +58,27 @@ const Game = () => {
             }
         }
     }
+    */
 
-    const [state, dispatchPlayerActions] = useReducer(playerActions, new getInitialState())
+    const getInitialDeck = (customDBParam) => {
+        return customDBParam.map((card, index) => {
+            let cardObj = card
+            cardObj.id = index
+            return cardObj
+        })
+    }
+
+    const shuffleDeck = (deck) => {
+        return deck.sort(() => Math.random() - 0.5)
+    }
+
+    const initialState = {
+        gameState:{
+            currentState: "inactive"
+        }
+    }
+
+    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
 
     function playerActions(state, action){
@@ -94,14 +98,32 @@ const Game = () => {
                 const playerHand = playerDeck.splice(0, 7) 
 
                 newState = {
-                    ...state,
+                    gameState: {
+                        state: "NEW_GAME",
+                        activePlayer: "player"
+                    },
                     playerState: {
                         player: {
-                            ...state.playerState.player,
                             deck: playerDeck,
+                            playerHitpoints: 20,
                             hand: playerHand,
-                            turn: 1
+                            cardsInPlay: [],
+                            graveyard: [],
+                            exile: [],
+                            playedLand: false,
+                            turn: 1,
+                            ManaPool: {
+                                w: 0,
+                                u: 0,
+                                b: 0,
+                                r: 0,
+                                g: 0,
+                                c: 0
+                            }
                         }
+                    },
+                    aiState: {
+
                     }
                 }
                 break
@@ -157,7 +179,8 @@ const Game = () => {
                 console.log ('played card id', action.playedCard.id)
                 newCardInPlay = {
                     ...action.playedCard,
-                    tapped: false
+                    tapped: false,
+                    damage: 0
                 }
                 
                 newCardsInPlay = [
@@ -306,24 +329,31 @@ const Game = () => {
         }
     }
 
-    return <div>
-        <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
-        <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
-        Turn: {state.playerState.player.turn}
-        <ManaPoolHUD manaPoolProps={state.playerState.player.ManaPool} />
-        <div className="Board">
-            <PlayingZone
-                cardsInPlayProps={state.playerState.player.cardsInPlay}
-                tapCardProps={tapCard}
-            />
-            <Hand
-                handProps={state.playerState.player.hand}
-                dispatchPlayerActionsProps={dispatchPlayerActions}
-                castSpellProps={attemptToCastSpell}
-                playLandProps={attemptToPlayLand}
-            />
+    if(state.gameState.currentState === 'inactive'){
+        return <div>
+            <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>START GAME</button>
         </div>
-    </div>
+    }
+    else{
+        return <div>
+            <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>RESTART GAME</button>
+            <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
+            Turn: {state.playerState.player.turn}
+            <ManaPoolHUD manaPoolProps={state.playerState.player.ManaPool} />
+            <div className="Board">
+                <PlayingZone
+                    cardsInPlayProps={state.playerState.player.cardsInPlay}
+                    tapCardProps={tapCard}
+                />
+                <Hand
+                    handProps={state.playerState.player.hand}
+                    dispatchPlayerActionsProps={dispatchPlayerActions}
+                    castSpellProps={attemptToCastSpell}
+                    playLandProps={attemptToPlayLand}
+                />
+            </div>
+        </div>
+    }
 }
 
 export default Game
