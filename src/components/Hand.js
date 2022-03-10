@@ -9,8 +9,6 @@ const Hand = (props) => {
                 cardProps={card} 
                 dispatchPlayerActionsProps={props.dispatchPlayerActionsProps}
                 castSpellProps={props.castSpellProps}
-                playLandProps={props.playLandProps}
-                tapCardProps={props.tapCardProps}
                 key={index}
             /> 
         )}

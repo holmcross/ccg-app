@@ -5,6 +5,13 @@
   border: solid black 1px;
 }
 
+.AIZone {
+  display: flex;
+  background-color: rgb(225, 142, 142);
+  justify-content: left;
+  column-gap: 8px;
+}
+
 .PlayingZone {
   display: flex;
   flex-direction: column;

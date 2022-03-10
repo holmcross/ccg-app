@@ -2,7 +2,8 @@ import React, { useReducer, useState } from 'react'
 import Hand from './Hand'
 import PlayingZone from './PlayingZone'
 import ManaPoolHUD  from './ManaPoolHUD'
-import customDB from "../custom_db.json"
+import AIZone from './AIZone'
+import HS_db from "../HS_db.json"
 
     /*
     //reducer example:
@@ -20,14 +21,6 @@ import customDB from "../custom_db.json"
     {(conditional expression)) && (code to return if true)}
     */
 
-const COLORS = {
-    w: 0,
-    u: 1,
-    b: 2,
-    r: 3,
-    g: 4,
-    c: 5
-}
 
 const Game = () => {
 
@@ -94,13 +87,20 @@ const Game = () => {
         switch(action.type){
             case "SETUP_GAME":
                 console.log("Starting up game...")
-                const playerDeck = shuffleDeck(getInitialDeck(customDB))
-                const playerHand = playerDeck.splice(0, 7) 
+                const playerDeck = shuffleDeck(getInitialDeck(HS_db))
+                const playerHand = playerDeck.splice(0, 5) 
 
                 newState = {
                     gameState: {
                         state: "NEW_GAME",
-                        activePlayer: "player"
+                        activePlayer: "player",
+                        ai: {
+                            cardsInPlay:[
+                                {"name":"Toe Cutter","cmc":2,"type":1,"color":"b","power":2,"toughness":2,"manaCost": 2, "printableManaCost":"BB"},
+                                {"name":"Toe Protector","cmc":2,"type":1,"color":"b","power":1,"toughness":3,"manaCost": 2, "printableManaCost":"BB"},
+                                {"name":"Toe Assaulter","cmc":3,"type":1,"color":"b","power":3,"toughness":3,"manaCost": 3, "printableManaCost":"BBB"}
+                            ]
+                        }
                     },
                     playerState: {
                         player: {
@@ -110,20 +110,10 @@ const Game = () => {
                             cardsInPlay: [],
                             graveyard: [],
                             exile: [],
-                            playedLand: false,
                             turn: 1,
-                            ManaPool: {
-                                w: 0,
-                                u: 0,
-                                b: 0,
-                                r: 0,
-                                g: 0,
-                                c: 0
-                            }
+                            currentMana: 1,
+                            maxMana: 1
                         }
-                    },
-                    aiState: {
-
                     }
                 }
                 break
@@ -136,30 +126,33 @@ const Game = () => {
 
                 newDeck = structuredClone(state.playerState.player.deck)
 
-                newCardInHand = newDeck.shift()
+                if (state.playerState.player.hand.length < 10){
+                    newCardInHand = newDeck.shift()
+                    newHand = [
+                        ...state.playerState.player.hand,
+                        newCardInHand
+                    ]
+                } else {
+                    newHand = [
+                        ...state.playerState.player.hand
+                    ]
+                }
                 
-                newHand = [
-                    ...state.playerState.player.hand,
-                    newCardInHand
-                ]
+                const newTurn = state.playerState.player.turn + 1;
+                let newMana = 10;
 
-                const newTurn = state.playerState.player.turn + 1
+                if(state.playerState.player.maxMana + 1 < 10){
+                    newMana = state.playerState.player.maxMana + 1
+                }
 
                 newIndividualPlayerState = {
                     ...state.playerState.player,
                     hand: newHand,
                     cardsInPlay: newCardsInPlay,
                     deck: newDeck,
-                    playedLand: false,
                     turn: newTurn,
-                    ManaPool: {
-                        w: 0,
-                        u: 0,
-                        b: 0,
-                        r: 0,
-                        g: 0,
-                        c: 0
-                    }
+                    currentMana: newMana,
+                    maxMana: newMana
                 }
 
                 newPlayerState = {
@@ -190,18 +183,20 @@ const Game = () => {
 
                 newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
                 
+                /*
                 // pays the cost of the card
                 // let newManaPool = {...state.playerState.player.ManaPool}
                 let newManaPool = structuredClone(state.playerState.player.ManaPool)
                 for(const manaPip in action.newPlayerManaPool){
                     newManaPool[manaPip] = action.newPlayerManaPool[manaPip]
                 }
+                */
                 
                 newIndividualPlayerState = {
                     ...state.playerState.player,
                     hand: newHand,
                     cardsInPlay: newCardsInPlay,
-                    ManaPool: newManaPool
+                    currentMana: action.newPlayerManaPool
                 }
                 newPlayerState = {
                     ...state.playerState,
@@ -212,79 +207,13 @@ const Game = () => {
                     playerState: newPlayerState
                 }
                 break
+            
+            case "ALTER_CREATURE_STATS":
+                switch(action.alterType){
+                    case "INCREASE":
 
-            case "PLAY_LAND_FROM_HAND":
-                console.log ('played card id', action.playedCard.id)
-                newCardInPlay = {
-                    ...action.playedCard,
-                    tapped: false
                 }
-                
-                newCardsInPlay = [
-                    ...state.playerState.player.cardsInPlay,
-                    newCardInPlay
-                ]
 
-                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id !== action.playedCard.id )
-                
-                newIndividualPlayerState = {
-                    ...state.playerState.player,
-                    hand: newHand,
-                    cardsInPlay: newCardsInPlay,
-                    playedLand: true
-                }
-                newPlayerState = {
-                    ...state.playerState,
-                    player: newIndividualPlayerState
-                }
-                newState = {
-                    ...state,
-                    playerState: newPlayerState
-                }
-                break
-
-            case "TAP_CARD":
-
-                console.log("Tapping card")
-
-                // find the card that was tapped, and set the tapped the attribute
-                newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
-                    if(card.id === action.tappedCard.id){ card.tapped = true }
-                    return card
-                })
-
-                // if the tapped card was a land, add mana
-                if(action.tappedCard.type === 0){
-                    // I use const here just to tell myself I won't change these directly
-                    const manaPool = state.playerState.player.ManaPool
-                    const color = action.tappedCard.color
-                    const newManaPool = {
-                        ...manaPool,
-                        // Here, I add 1 to a reference of the property, instead of incrementing the property
-                        [color]: manaPool[color] + 1 
-
-                    }
-
-                    newIndividualPlayerState = {
-                        ...state.playerState.player,
-                        ManaPool: newManaPool,
-                        cardsInPlay: newCardsInPlay
-                    }
-                }else{ // is creature, add no mana
-                    newIndividualPlayerState = {
-                        ...state.playerState.player,
-                        cardsInPlay: newCardsInPlay
-                    }
-                }
-                    
-                newState = {
-                    ...state,
-                    playerState: {
-                        ...state.playerState,
-                        player: newIndividualPlayerState,
-                    }
-                }
-                break;
             default:
                 break
         }
@@ -296,38 +225,16 @@ const Game = () => {
     //  after casting cost has been spent
     const attemptToCastSpell = (card) => {
 
-        let flag = 1
-        let newPlayerManaPool = {}
-        for(const manaPip in card.manaCost){
-
-            if (state.playerState.player.ManaPool[manaPip] < card.manaCost[manaPip]){
-                flag = 0
-            }else{
-                newPlayerManaPool[manaPip] = state.playerState.player.ManaPool[manaPip] - card.manaCost[manaPip]
-            }
-            if (!flag) {break}
-        }
-        if (flag) {dispatchPlayerActions({
-            type:"PLAY_CARD_FROM_HAND", playedCard:card, newPlayerManaPool: newPlayerManaPool})
+        let remainingMana = state.playerState.player.currentMana - card.manaCost
+        
+        if (remainingMana >= 0) 
+        {dispatchPlayerActions({
+            type:"PLAY_CARD_FROM_HAND", playedCard:card, newPlayerManaPool: remainingMana})
         }else{
             console.log("Insufficent mana to play", card.name)
         }
     }
 
-    const attemptToPlayLand = (card) => {
-        if(!state.playerState.player.playedLand){
-            dispatchPlayerActions({type:"PLAY_LAND_FROM_HAND", playedCard: card})
-        }
-        else{
-            console.log("You cannot play this land")
-        }
-    }
-
-    const tapCard = (card) => {
-        if(!card.tapped){
-            dispatchPlayerActions({type:"TAP_CARD", tappedCard:card})
-        }
-    }
 
     if(state.gameState.currentState === 'inactive'){
         return <div>
@@ -339,17 +246,21 @@ const Game = () => {
             <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>RESTART GAME</button>
             <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
             Turn: {state.playerState.player.turn}
-            <ManaPoolHUD manaPoolProps={state.playerState.player.ManaPool} />
+            <ManaPoolHUD 
+                currentManaProps={state.playerState.player.currentMana} 
+                maxManaProps={state.playerState.player.maxMana}
+            />
             <div className="Board">
+                <AIZone
+                    cardsInPlayProps={state.gameState.ai.cardsInPlay}
+                />
                 <PlayingZone
                     cardsInPlayProps={state.playerState.player.cardsInPlay}
-                    tapCardProps={tapCard}
                 />
                 <Hand
                     handProps={state.playerState.player.hand}
                     dispatchPlayerActionsProps={dispatchPlayerActions}
                     castSpellProps={attemptToCastSpell}
-                    playLandProps={attemptToPlayLand}
                 />
             </div>
         </div>
