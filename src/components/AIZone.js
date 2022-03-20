@@ -7,6 +7,7 @@ const AIZone = (props) => {
             <CardInPlay 
                 cardProps={card}
                 key={index}
+                targetWithActionProps={props.targetWithActionProps}
             />
         )}
     </div>

@@ -57,6 +57,7 @@ const Game = () => {
         return customDBParam.map((card, index) => {
             let cardObj = card
             cardObj.id = index
+            cardObj.damage = 0
             return cardObj
         })
     }
@@ -82,6 +83,8 @@ const Game = () => {
         let newHand = [];
         let newIndividualPlayerState = {};
         let newPlayerState = {};
+        let newGameState = {};
+        let newAiState = {};
         let newDeck = [];
 
         switch(action.type){
@@ -93,12 +96,11 @@ const Game = () => {
                 newState = {
                     gameState: {
                         state: "NEW_GAME",
-                        activePlayer: "player",
                         ai: {
                             cardsInPlay:[
-                                {"name":"Toe Cutter","cmc":2,"type":1,"color":"b","power":2,"toughness":2,"manaCost": 2, "printableManaCost":"BB"},
-                                {"name":"Toe Protector","cmc":2,"type":1,"color":"b","power":1,"toughness":3,"manaCost": 2, "printableManaCost":"BB"},
-                                {"name":"Toe Assaulter","cmc":3,"type":1,"color":"b","power":3,"toughness":3,"manaCost": 3, "printableManaCost":"BBB"}
+                                {"name":"Toe Cutter","cmc":2,"type":1,"color":"b","power":2,"toughness":2,"manaCost": 2, "printableManaCost":"BB", "damage":0},
+                                {"name":"Toe Protector","cmc":2,"type":1,"color":"b","power":1,"toughness":3,"manaCost": 2, "printableManaCost":"BB", "damage":0},
+                                {"name":"Toe Assaulter","cmc":3,"type":1,"color":"b","power":3,"toughness":3,"manaCost": 3, "printableManaCost":"BBB", "damage":0}
                             ]
                         }
                     },
@@ -207,17 +209,73 @@ const Game = () => {
                     playerState: newPlayerState
                 }
                 break
-            
-            case "ALTER_CREATURE_STATS":
-                switch(action.alterType){
-                    case "INCREASE":
 
+            case "ATTACK":
+                console.log(action.attackingSource.name, "is attacking", action.attackedTarget, "inside reducer")
+
+                let newDamage = action.attackedTarget.damage + action.attackingSource.power
+
+                console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
+
+                // this needs to be hard coded to the AI's cards in play
+
+                if(newDamage >= action.attackedTarget.toughness){
+                    console.log(action.attackedTarget.name, "has been destroyed")
+                    newCardsInPlay = state.gameState.ai.cardsInPlay.filter(card => card.id != action.attackedTarget.id)
+                    console.log("new cards in play:", newCardsInPlay)
+                }else{
+                    newCardsInPlay = state.gameState.ai.cardsInPlay.map(card => {
+                        if(card.id === action.attackedTarget.id){
+                            let cardObj = action.attackedTarget
+                            cardObj.damage = newDamage
+                            return cardObj
+                        }else{
+                            return card
+                        }
+                    })
+                }
+
+                newAiState = {
+                    ...state.gameState.ai,
+                    cardsInPlay: newCardsInPlay
+                }
+
+                newGameState = {
+                    ...state.gameState,
+                    ai: newAiState
+                }
+
+                newState = {
+                    ...state,
+                    gameState: newGameState
+                }
+
+            case "END_TURN":
+                newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
+                    let cardObj = card
+                    cardObj.damage = 0
+                    return cardObj
+                })
+
+                newIndividualPlayerState = {
+                    ...state.playerState.player,
+                    cardsInPlay: newCardsInPlay
+                }
+
+                newPlayerState = {
+                    ...state.playerState,
+                    player: newIndividualPlayerState
+                }
+
+                newState = {
+                    ...state,
+                    playerState: newPlayerState
                 }
 
             default:
                 break
         }
-        console.log("newState returned from reducer action", action.type, "is", newState)
+        //console.log("newState returned from reducer action", action.type, "is", newState)
         return newState
     }
 
@@ -235,6 +293,33 @@ const Game = () => {
         }
     }
 
+    const targetWithAction = (source, target, actionType) => {
+        switch(actionType){
+            case 'ATTACK':
+
+            console.log("attacking from function")
+
+            dispatchPlayerActions({
+                type: "ATTACK",
+                attackingSource: source,
+                attackedTarget: target
+            })
+        }
+    }
+
+    const endTurn = () => {
+        dispatchPlayerActions({
+            type:"END_TURN"
+        })
+        dispatchPlayerActions({
+            type:"BEGIN_TURN"
+        })
+    }
+
+
+
+
+    // render the appropiate UI depending on game state
 
     if(state.gameState.currentState === 'inactive'){
         return <div>
@@ -244,7 +329,7 @@ const Game = () => {
     else{
         return <div>
             <button onClick={() => dispatchPlayerActions({type:"SETUP_GAME"})}>RESTART GAME</button>
-            <button onClick={() => dispatchPlayerActions({type:"BEGIN_TURN"})}>NEW TURN</button>
+            <button onClick={() => endTurn()}>NEW TURN</button>
             Turn: {state.playerState.player.turn}
             <ManaPoolHUD 
                 currentManaProps={state.playerState.player.currentMana} 
@@ -253,9 +338,11 @@ const Game = () => {
             <div className="Board">
                 <AIZone
                     cardsInPlayProps={state.gameState.ai.cardsInPlay}
+                    targetWithActionProps={targetWithAction}
                 />
                 <PlayingZone
                     cardsInPlayProps={state.playerState.player.cardsInPlay}
+                    targetWithActionProps={targetWithAction}
                 />
                 <Hand
                     handProps={state.playerState.player.hand}

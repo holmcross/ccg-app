@@ -7,7 +7,10 @@ const CardInPlay = (props) => {
     
     const [{ isDrop, canDrop }, drop] = useDrop(() => ({
         accept: "card",
-        drop: (item) => console.log("You are dropping", item.name, "on", props.name),
+        drop: (item) => {
+            console.log("You are dropping", item.card.name, "on", props.cardProps.name)
+            props.targetWithActionProps(item.card, props.cardProps, 'ATTACK')
+        },
         collect: (monitor) => ({
             isDrop: !!monitor.isOver(),
             canDrop: monitor.canDrop(),
@@ -17,11 +20,11 @@ const CardInPlay = (props) => {
 
     const [{ isDragging, canDrag }, drag] = useDrag(() => ({
         type: "card",
-        item: { id: props.id, name: props.name },
+        item: { id: props.cardProps.id, card: props.cardProps },
         // collection function defines different states and props accessible 
         collect: (monitor) => ({
             // double bang just returns the truthy-ness
-            isDragging: props.id === monitor?.getItem()?.id,
+            isDragging: props.cardProps.id === monitor?.getItem()?.id,
             canDrag: monitor.canDrag(),
         })
     }))
@@ -44,7 +47,9 @@ const CardInPlay = (props) => {
             <div
                 ref={drag}
                 style={{
-                    border: isDragging ? "5px solid pink" : "0px",
+                    //border: isDragging ? "5px solid pink" : "0px",
+                    width: '100%',
+                    height: '100%',
                     position: 'absolute',
                     left: 0,
                     top: 0,
@@ -57,6 +62,7 @@ const CardInPlay = (props) => {
                     {props.cardProps.manaCost}
                 </div>
             </div>
+            damage is : {props.cardProps.damage}
             <div className="Card-PT" style={{}}>{props.cardProps.power}/{props.cardProps.toughness}</div>
     </div>
 }

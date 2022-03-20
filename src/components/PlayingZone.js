@@ -2,7 +2,7 @@ import React from "react"
 import CardInPlay from "./CardInPlay"
 
 const PlayingZone = (props) => {
-    console.log("PlayingZone component props is:", props)
+    //console.log("PlayingZone component props is:", props)
 
     return <div className="PlayingZone">
         <div className="PlayingZone-Creatures">
@@ -10,6 +10,7 @@ const PlayingZone = (props) => {
                 <CardInPlay 
                     cardProps={card}
                     key={index}
+                    targetWithActionProps={props.targetWithActionProps}
                 />
             )}
         </div>
