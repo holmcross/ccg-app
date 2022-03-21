@@ -9,7 +9,7 @@ const PlayingZone = (props) => {
             {props.cardsInPlayProps.map((card, index) => 
                 <CardInPlay 
                     cardProps={card}
-                    key={index}
+                    key={card.id}
                     targetWithActionProps={props.targetWithActionProps}
                 />
             )}
