@@ -72,10 +72,9 @@ const Game = () => {
         }
     }
 
-    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
 
 
-    function playerActions(state, action){
+    const playerActions = (state, action) =>{
         let newState = {};
         let newCardInPlay = {};
         let newCardsInPlay = [];
@@ -183,7 +182,7 @@ const Game = () => {
                     newCardInPlay
                 ]
 
-                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id != action.playedCard.id )
+                newHand = state.playerState.player.hand.filter(cardObj => cardObj.id !== action.playedCard.id )
                 
                 /*
                 // pays the cost of the card
@@ -211,45 +210,78 @@ const Game = () => {
                 break
 
             case "ATTACK":
-                console.log(action.attackingSource.name, "is attacking", action.attackedTarget, "inside reducer")
+                // console.log(action.attackingSource.name, "is attacking", action.attackedTarget, "inside reducer")
 
-                let newDamage = action.attackedTarget.damage + action.attackingSource.power
+                // let newDamage = action.attackedTarget.damage + action.attackingSource.power;
+                // console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
+                const source = state.playerState.player.cardsInPlay.find(elem => elem.id === action.attackingSource);
+                const target= state.gameState.ai.cardsInPlay.find(elem => elem.id === action.attackedTarget);
 
-                console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
+                const targetDestroyed = ( target.damage + source.power ) >= target.toughness;
 
-                // this needs to be hard coded to the AI's cards in play
-
-                if(newDamage >= action.attackedTarget.toughness){
-                    console.log(action.attackedTarget.name, "has been destroyed")
-                    newCardsInPlay = state.gameState.ai.cardsInPlay.filter(card => card.id != action.attackedTarget.id)
-                    console.log("new cards in play:", newCardsInPlay)
-                }else{
-                    newCardsInPlay = state.gameState.ai.cardsInPlay.map(card => {
-                        if(card.id === action.attackedTarget.id){
-                            let cardObj = action.attackedTarget
-                            cardObj.damage = newDamage
-                            return cardObj
-                        }else{
-                            return card
-                        }
-                    })
+                if (targetDestroyed) {
+                    console.log(`${target.name} has been destroyed.`);
                 }
+                console.log([
+                    ...state.gameState.ai.cardsInPlay
+                ])
 
-                newAiState = {
-                    ...state.gameState.ai,
-                    cardsInPlay: newCardsInPlay
-                }
-
-                newGameState = {
-                    ...state.gameState,
-                    ai: newAiState
-                }
+                newCardsInPlay = targetDestroyed ? [
+                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget)
+                ] :
+                [
+                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget),
+                    {
+                        ...target,
+                        damage: target.damage + source.power,
+                    }
+                ]
 
                 newState = {
                     ...state,
-                    gameState: newGameState
+                    gameState: {
+                        ...state.gameState,
+                        ai: {
+                            ...state.gameState.ai,
+                            cardsInPlay: newCardsInPlay
+                        }
+                    }
                 }
 
+                // this needs to be hard coded to the AI's cards in play
+
+                // if(newDamage >= action.attackedTarget.toughness){
+                //     console.log(action.attackedTarget.name, "has been destroyed")
+                //     newCardsInPlay = state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget.id)
+                //     console.log("new cards in play:", newCardsInPlay)
+                // }else{
+                //     newCardsInPlay = state.gameState.ai.cardsInPlay.map(card => {
+                //         if(card.id === action.attackedTarget.id){
+                //             let cardObj = action.attackedTarget
+                //             cardObj.damage = newDamage
+                //             return cardObj
+                //         }else{
+                //             return card
+                //         }
+                //     })
+                // }
+
+                // newAiState = {
+                //     ...state.gameState.ai,
+                //     cardsInPlay: newCardsInPlay
+                // }
+
+                // newGameState = {
+                //     ...state.gameState,
+                //     ai: newAiState
+                // }
+
+                // newState = {
+                //     ...state,
+                //     gameState: newGameState
+                // }
+
+                break;
             case "END_TURN":
                 newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
                     let cardObj = card
@@ -272,6 +304,7 @@ const Game = () => {
                     playerState: newPlayerState
                 }
 
+            break;
             default:
                 break
         }
@@ -279,6 +312,7 @@ const Game = () => {
         return newState
     }
 
+    const [state, dispatchPlayerActions] = useReducer(playerActions, initialState)
     // check if player can pay the mana for a spell, and if so calculate the new mana pool
     //  after casting cost has been spent
     const attemptToCastSpell = (card) => {
@@ -301,9 +335,13 @@ const Game = () => {
 
             dispatchPlayerActions({
                 type: "ATTACK",
-                attackingSource: source,
-                attackedTarget: target
+                attackingSource: source.id,
+                attackedTarget: target.id
             })
+            break;
+        default:
+            console.log('unrecognized action')
+            break;
         }
     }
 
