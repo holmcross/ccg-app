@@ -226,16 +226,15 @@ const Game = () => {
                     ...state.gameState.ai.cardsInPlay
                 ])
 
-                newCardsInPlay = targetDestroyed ? [
-                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget)
-                ] :
-                [
-                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget),
-                    {
-                        ...target,
-                        damage: target.damage + source.power,
-                    }
-                ]
+                newCardsInPlay = targetDestroyed 
+                    ? state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget)
+                    : state.gameState.ai.cardsInPlay.map(card => card.id === action.attackedTarget 
+                        ? {
+                            ...card,
+                            damage: target.damage + source.power,
+                        } 
+                        : card
+                    )
 
                 newState = {
                     ...state,
