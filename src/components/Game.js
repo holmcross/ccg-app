@@ -235,7 +235,9 @@ const Game = () => {
 
                 // let newDamage = action.attackedTarget.damage + action.attackingSource.power;
                 // console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
-                const source = state.playerState.player.cardsInPlay.find(elem => elem.id === action.attackingSource);
+                const source = state.playerState.player.cardsInPlay.find(elem => {
+                    console.log("finding card", elem)
+                    return elem.id === action.attackingSource});
                 const target = state.gameState.ai.cardsInPlay.find(elem => elem.id === action.attackedTarget);
 
                 const targetDestroyed = ( target.damage + source.power ) >= target.toughness;
@@ -347,7 +349,20 @@ const Game = () => {
         switch(actionType){
             case 'ATTACK':
 
-            console.log(source.name, "can attack? ", source.canAttack)
+            console.log("cards in play are", state)
+            
+            let attacker = state.playerState.player.cardsInPlay.find(elem => {
+                console.log("inside find function, current card is", elem)
+                return elem.id === source.id})
+
+            console.log("source ID is", source.id)
+
+            console.log("attacker is", attacker)
+            
+            //console.log(attacker.name, "can attack? ", source.canAttack)
+
+            console.log(attacker.damage, "points of damage on source")
+
 
             if(source.canAttack === true){
                 console.log("attacking from function")
