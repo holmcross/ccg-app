@@ -287,8 +287,7 @@ const Game = () => {
                     }
                 }
 
-                break;
-
+            break
 
 
 
