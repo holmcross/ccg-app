@@ -16,9 +16,14 @@ import HS_db from "../HS_db.json"
                 return state
         }
     }
-
     condtional example for JSX:
     {(conditional expression)) && (code to return if true)}
+    */
+   
+    /* PROBLEMS ****
+
+    1. does not handle empty deck
+
     */
 
 
@@ -57,7 +62,8 @@ const Game = () => {
         return customDBParam.map((card, index) => {
             let cardObj = card
             cardObj.id = index
-            cardObj.damage = 0
+            //cardObj.damage = 0
+            //cardObj.canAttack = false
             return cardObj
         })
     }
@@ -119,9 +125,15 @@ const Game = () => {
                 }
                 break
 
+
+
+
+
+
             case "BEGIN_TURN":
                 newCardsInPlay = state.playerState.player.cardsInPlay.map(card => {
                     if(card.tapped){card.tapped = false}
+                    card.canAttack = true
                     return card
                 })
 
@@ -167,14 +179,19 @@ const Game = () => {
                 }
                 break
 
+
+
+
+
             // this accepts 'action.newPlayerManaPool' which is the remaining mana in the player 
             //  mana pool after the casting cost has been paid
             case "PLAY_CARD_FROM_HAND":
                 console.log ('played card id', action.playedCard.id)
                 newCardInPlay = {
                     ...action.playedCard,
-                    tapped: false,
-                    damage: 0
+                    //tapped: false,
+                    damage: 0,
+                    canAttack: false
                 }
                 
                 newCardsInPlay = [
@@ -209,36 +226,58 @@ const Game = () => {
                 }
                 break
 
+
+
+
+
             case "ATTACK":
                 // console.log(action.attackingSource.name, "is attacking", action.attackedTarget, "inside reducer")
 
                 // let newDamage = action.attackedTarget.damage + action.attackingSource.power;
                 // console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
                 const source = state.playerState.player.cardsInPlay.find(elem => elem.id === action.attackingSource);
-                const target= state.gameState.ai.cardsInPlay.find(elem => elem.id === action.attackedTarget);
+                const target = state.gameState.ai.cardsInPlay.find(elem => elem.id === action.attackedTarget);
 
                 const targetDestroyed = ( target.damage + source.power ) >= target.toughness;
+
+                const sourceDestroyed = ( source.damage + target.power ) >= source.toughness;
 
                 if (targetDestroyed) {
                     console.log(`${target.name} has been destroyed.`);
                 }
-                console.log([
+                console.log("AI cards:", [
                     ...state.gameState.ai.cardsInPlay
                 ])
 
-                newCardsInPlay = targetDestroyed ? [
-                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget)
-                ] :
-                [
-                    ...state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget),
-                    {
-                        ...target,
-                        damage: target.damage + source.power,
-                    }
-                ]
+                let newPlayerCardsInPlay = sourceDestroyed
+                    ? state.playerState.player.cardsInPlay.filter(card => card.id !== action.attackingSource)
+                    : state.playerState.player.cardsInPlay.map(card => card.id === action.attackingSource
+                        ? {
+                            ...card,
+                            damage: source.damage + target.power,
+                            canAttack: false
+                        }
+                        : card
+                    )
+
+                newCardsInPlay = targetDestroyed 
+                    ? state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget)
+                    : state.gameState.ai.cardsInPlay.map(card => card.id === action.attackedTarget
+                        ? {
+                            ...card,
+                            damage: target.damage + source.power,
+                        } 
+                        : card
+                    )
 
                 newState = {
-                    ...state,
+                    //...state,
+                    playerState: {
+                        player: {
+                            ...state.playerState.player,
+                            cardsInPlay: newPlayerCardsInPlay
+                        }
+                    },
                     gameState: {
                         ...state.gameState,
                         ai: {
@@ -248,46 +287,24 @@ const Game = () => {
                     }
                 }
 
-                // this needs to be hard coded to the AI's cards in play
-
-                // if(newDamage >= action.attackedTarget.toughness){
-                //     console.log(action.attackedTarget.name, "has been destroyed")
-                //     newCardsInPlay = state.gameState.ai.cardsInPlay.filter(card => card.id !== action.attackedTarget.id)
-                //     console.log("new cards in play:", newCardsInPlay)
-                // }else{
-                //     newCardsInPlay = state.gameState.ai.cardsInPlay.map(card => {
-                //         if(card.id === action.attackedTarget.id){
-                //             let cardObj = action.attackedTarget
-                //             cardObj.damage = newDamage
-                //             return cardObj
-                //         }else{
-                //             return card
-                //         }
-                //     })
-                // }
-
-                // newAiState = {
-                //     ...state.gameState.ai,
-                //     cardsInPlay: newCardsInPlay
-                // }
-
-                // newGameState = {
-                //     ...state.gameState,
-                //     ai: newAiState
-                // }
-
-                // newState = {
-                //     ...state,
-                //     gameState: newGameState
-                // }
-
                 break;
+
+
+
+
             case "END_TURN":
                 newCardsInPlay = state.playerState.player.cardsInPlay.map( card => {
                     let cardObj = card
-                    cardObj.damage = 0
+                    //card.Obj.damage = 0
                     return cardObj
                 })
+                /*
+                let newAiCardsInPlay = state.gameState.ai.cardsInPlay.map( card => {
+                    let cardObj = card
+                    card.Obj.damage = 0
+                    return cardObj
+                })
+                */
 
                 newIndividualPlayerState = {
                     ...state.playerState.player,
@@ -331,16 +348,21 @@ const Game = () => {
         switch(actionType){
             case 'ATTACK':
 
-            console.log("attacking from function")
+            console.log(source.name, "can attack? ", source.canAttack)
 
-            dispatchPlayerActions({
-                type: "ATTACK",
-                attackingSource: source.id,
-                attackedTarget: target.id
-            })
+            if(source.canAttack === true){
+                console.log("attacking from function")
+                dispatchPlayerActions({
+                    type: "ATTACK",
+                    attackingSource: source.id,
+                    attackedTarget: target.id
+                })
+            }else{
+                console.log(source.name, "cannot attack")
+            }
             break;
         default:
-            console.log('unrecognized action')
+            console.log('unrecognized reducer action type')
             break;
         }
     }

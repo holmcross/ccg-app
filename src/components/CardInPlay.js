@@ -17,6 +17,7 @@ const CardInPlay = (props) => {
         }),
     }))
     // drag will be used to reference the item that is to be made draggable
+    const validTarget = props.ai;
 
     const [{ isDragging, canDrag }, drag] = useDrag(() => ({
         type: "card",
@@ -41,9 +42,10 @@ const CardInPlay = (props) => {
                     left: 0,
                     top: 0,
                     zIndex: !isDragging && canDrop ? 2: 'auto',
-                    //border: (canDrop && validTarget) ? "5px solid blue" : "0px",
+                    border: (canDrop && validTarget) ? "5px solid blue" : "0px",
                 }} 
             />
+            {validTarget && canDrop && <div style={{position: "absolute", fontSize: "20pt", color: "white"}}>{props.cardProps.id}</div>}
             <div
                 ref={drag}
                 style={{
