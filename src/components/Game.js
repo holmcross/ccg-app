@@ -5,6 +5,7 @@ import ManaPoolHUD from './ManaPoolHUD'
 import AIZone from './AIZone'
 // eslint-disable-next-line camelcase
 import HS_db from '../HS_db.json'
+import AICard from './AICard'
 
 /*
 //reducer example:
@@ -17,6 +18,10 @@ const reducerFunc = (state,action) => {
     return state
   }
 }
+
+tips for reducers: try to pass the reducer all the new state data, and keep state mutation
+  logic outside of the reducer
+
 condtional example for JSX:
 {(conditional expression)) && (code to return if true)}
 */
@@ -28,41 +33,10 @@ condtional example for JSX:
 */
 
 const Game = () => {
-  /*
-  function getInitialState () {
-    this.gameState = {
-      currentState: "",
-      activePlayer: ""
-    };
-    this.playerState = {
-      player: {
-        deck: [],
-        playerHitpoints: 20,
-        hand: [],
-        cardsInPlay: [],
-        graveyard: [],
-        exile: [],
-        playedLand: false,
-        turn: 0,
-        ManaPool: {
-          w: 0,
-          u: 0,
-          b: 0,
-          r: 0,
-          g: 0,
-          c: 0
-        }
-      }
-    }
-  }
-  */
-
   const getInitialDeck = (customDBParam) => {
     return customDBParam.map((card, index) => {
       const cardObj = card
       cardObj.id = index
-      // cardObj.damage = 0
-      // cardObj.canAttack = false
       return cardObj
     })
   }
@@ -73,7 +47,7 @@ const Game = () => {
 
   const initialState = {
     gameState: {
-      currentState: 'inactive',
+      currentState: 'INACTIVE',
     },
   }
 
@@ -85,6 +59,7 @@ const Game = () => {
     let newHand = []
     let newIndividualPlayerState = {}
     let newPlayerState = {}
+    let newAiState = {}
     let newDeck = []
 
     switch (action.type) {
@@ -96,8 +71,9 @@ const Game = () => {
 
           newState = {
             gameState: {
-              state: 'NEW_GAME',
+              currentState: 'ACTIVE',
               ai: {
+                hitPoints: 20,
                 cardsInPlay: [
                   {
                     name: 'Toe Cutter',
@@ -141,7 +117,7 @@ const Game = () => {
             playerState: {
               player: {
                 deck: playerDeck,
-                playerHitpoints: 20,
+                hitpoints: 20,
                 hand: playerHand,
                 cardsInPlay: [],
                 graveyard: [],
@@ -347,9 +323,64 @@ const Game = () => {
           ...state,
           playerState: newPlayerState,
         }
-
         break
+      case 'ATTACK_AI':
+        console.log('attacking AI from inside the reducer, new hitpoints are', action.newHitpoints)
+
+        newAiState = {
+          ...state.gameState.ai,
+          hitPoints: action.newHitpoints
+        }
+
+        const newCurrentState = action.newHitpoints <= 0 ? 'PLAYER_WIN' : state.gameState.currentState
+
+        const newPlayerCardsInPlay = state.playerState.player.cardsInPlay.map((card) => {
+          if(card.id === action.attackingSource.id){
+            console.log("found card")
+            return {
+              ...card,
+              canAttack: false
+            }
+          } else { return card }
+        })
+
+        newState = {
+          playerState: {
+            player: {
+              ...state.playerState.player,
+              cardsInPlay: newPlayerCardsInPlay
+            }
+          },
+          gameState: {
+            ...state.gameState,
+            currentState: newCurrentState,
+            ai: newAiState
+          }
+        }
+        break
+      case 'AI_ATTACK_RESULTS':
+        {
+            newState = {
+              gameState: {
+                ...state.gameState,
+                currentState: action.newGameState,
+                ai: {
+                  ...state.gameState.ai,
+                  cardsInPlay: action.aiCards
+                }
+              },
+              playerState: {
+                player: {
+                  ...state.playerState.player,
+                  cardsInPlay: action.playerCards,
+                  hitpoints: action.playerHitpoints
+                }
+              }
+            }
+            break
+        }
       default:
+        console.log('unrecogonized reducer action')
         break
     }
     // console.log("newState returned from reducer action", action.type, "is", newState)
@@ -374,6 +405,7 @@ const Game = () => {
       console.log('Insufficent mana to play', card.name)
     }
   }
+
 
   const targetWithAction = (source, target, actionType) => {
     console.log('cards in play are', state.playerState.player.cardsInPlay)
@@ -405,6 +437,25 @@ const Game = () => {
           }
         }
         break
+      case 'ATTACK_AI':
+        {
+          const attacker = state.playerState.player.cardsInPlay.find((elem) => {
+            console.log('inside find function, current card is', elem)
+            return elem.id === source
+          })
+          if (attacker.canAttack === true) {
+            console.log('attacking from function')
+            const newHitpoints = state.gameState.ai.hitPoints - attacker.power
+            dispatchPlayerActions({
+              type: 'ATTACK_AI',
+              attackingSource: attacker,
+              newHitpoints: newHitpoints
+            })
+          } else {
+            console.log(attacker.name, 'cannot attack')
+          }
+        }
+        break
       default:
         console.log('unrecognized reducer action type')
         break
@@ -415,14 +466,58 @@ const Game = () => {
     dispatchPlayerActions({
       type: 'END_TURN',
     })
+    aiAttackPhase()
     dispatchPlayerActions({
       type: 'BEGIN_TURN',
     })
   }
 
+  const aiAttackPhase = () => {
+
+    let newPlayerCardsInPlay = state.playerState.player.cardsInPlay
+    let newPlayerHitpoints = state.playerState.player.hitpoints
+
+    console.log('player HP at the start are', newPlayerHitpoints)
+    
+    let newAiCardsInPlay = state.gameState.ai.cardsInPlay.map(card => {
+      if (newPlayerCardsInPlay.length > 0) {
+        console.log('cards in play detected, searching for target')
+        let counter = 0
+        // find card to attack
+        while(newPlayerCardsInPlay[counter].damage >= newPlayerCardsInPlay[counter].toughness
+          && counter < newPlayerCardsInPlay.length){
+            counter++
+          }
+        if(counter === newPlayerCardsInPlay.length){
+          newPlayerHitpoints -= card.power
+          return card
+        } else {
+          // found card to attack
+          newPlayerCardsInPlay[counter].damage += card.power
+          card.damage += newPlayerCardsInPlay[counter].power
+          if(newPlayerCardsInPlay[counter].damage >= newPlayerCardsInPlay[counter].toughness){
+            newPlayerCardsInPlay.splice(counter,1)
+          }
+          return card
+        }
+      } else {
+        console.log('attacking player')
+        newPlayerHitpoints -= card.power
+        return card
+      }
+    })
+
+    let adjustedAiCardsInPlay = newAiCardsInPlay.filter(card => !(card.damage >= card.toughness))
+
+    let newGameState = newPlayerHitpoints <= 0 ? 'PLAYER_LOSS' : state.gameState.currentState
+    console.log('results of AI attack - new player HP', newPlayerHitpoints)
+    dispatchPlayerActions({type: 'AI_ATTACK_RESULTS', playerCards: newPlayerCardsInPlay,
+      aiCards: adjustedAiCardsInPlay, playerHitpoints: newPlayerHitpoints, newGameState: newGameState})
+  }
+
   // render the appropiate UI depending on game state
 
-  if (state.gameState.currentState === 'inactive') {
+  if (state.gameState.currentState === 'INACTIVE') {
     return (
       <div>
         <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
@@ -430,36 +525,58 @@ const Game = () => {
         </button>
       </div>
     )
-  } else {
+  } else if (state.gameState.currentState === 'PLAYER_WIN') {
     return (
       <div>
         <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
-          RESTART GAME
+          START GAME
         </button>
-        <button onClick={() => endTurn()}>NEW TURN</button>
-        Turn: {state.playerState.player.turn}
-        <ManaPoolHUD
-          currentManaProps={state.playerState.player.currentMana}
-          maxManaProps={state.playerState.player.maxMana}
-        />
-        <div className="Board">
-          <AIZone
-            cardsInPlayProps={state.gameState.ai.cardsInPlay}
-            targetWithActionProps={targetWithAction}
-          />
-          <PlayingZone
-            cardsInPlayProps={state.playerState.player.cardsInPlay}
-            targetWithActionProps={targetWithAction}
-          />
-          <Hand
-            handProps={state.playerState.player.hand}
-            dispatchPlayerActionsProps={dispatchPlayerActions}
-            castSpellProps={attemptToCastSpell}
-          />
-        </div>
+        YOU WON THE GAME!
       </div>
     )
-  }
+  } else if (state.gameState.currentState === 'PLAYER_LOSS') {
+    return (
+      <div>
+        <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+          START GAME
+        </button>
+        YOU GOT KILLED!
+      </div>
+    )
+  } else {
+      return (
+        <div>
+          <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+            RESTART GAME
+          </button>
+          <button onClick={() => endTurn()}>NEW TURN</button>
+          Turn: {state.playerState.player.turn}
+          <ManaPoolHUD
+            currentManaProps={state.playerState.player.currentMana}
+            maxManaProps={state.playerState.player.maxMana}
+          />
+          <div className="Board">
+            <AICard
+              targetWithActionProps={targetWithAction}
+              aiProps={state.gameState.ai}
+            />
+            <AIZone
+              cardsInPlayProps={state.gameState.ai.cardsInPlay}
+              targetWithActionProps={targetWithAction}
+            />
+            <PlayingZone
+              cardsInPlayProps={state.playerState.player.cardsInPlay}
+              targetWithActionProps={targetWithAction}
+            />
+            <Hand
+              handProps={state.playerState.player.hand}
+              dispatchPlayerActionsProps={dispatchPlayerActions}
+              castSpellProps={attemptToCastSpell}
+            />
+          </div>
+        </div>
+      )
+    }
 }
 
 export default Game

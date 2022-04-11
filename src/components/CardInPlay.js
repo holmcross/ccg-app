@@ -20,8 +20,9 @@ const CardInPlay = (props) => {
         canDrop: monitor.canDrop(),
       }),
     }),
-    [props.targetWithActionProps]
+    [props.targetWithActionProps] // dependency array, needs to reference this because the function has state
   )
+
   // drag will be used to reference the item that is to be made draggable
   const validTarget = props.ai
 
@@ -71,6 +72,7 @@ const CardInPlay = (props) => {
           <div className="Card-Cost">{props.cardProps.manaCost}</div>
           </div>
           damage is : {props.cardProps.damage}
+          {props.cardProps.canAttack && !props.cardProps.ai ? 'This creature can attack' : ''}
           <div className="Card-PT" style={{}}>
           {props.cardProps.power}/{props.cardProps.toughness}
           </div>

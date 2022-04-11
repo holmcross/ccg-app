@@ -1,3 +1,14 @@
 {
-  "svg.preview.background": "dark-transparent"
+  "svg.preview.background": "dark-transparent",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ]
 }

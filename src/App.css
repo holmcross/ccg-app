@@ -12,6 +12,18 @@
   column-gap: 8px;
 }
 
+.AICard {
+  display: flex;
+  min-width: 125px;
+  min-height: 175px;
+  max-width: 125px;
+  background-color: rgb(159, 159, 159);
+  background-size: contain;
+  transition: transform .25s;
+  cursor: pointer;
+  position: relative;
+}
+
 .PlayingZone {
   display: flex;
   flex-direction: column;

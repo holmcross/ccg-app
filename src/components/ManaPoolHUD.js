@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react'
 
 const ManaPoolHUD = (props) => {
-    return <div>
+  return <div>
         Mana: {props.currentManaProps} / {props.maxManaProps}
     </div>
 }
