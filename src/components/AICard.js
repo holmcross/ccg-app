@@ -17,20 +17,22 @@ const AICard = (props) => {
     [props.targetWithActionProps] // dependency array, needs to reference this because the function has state
   )
 
-  return <div className='AICard'>
-    AI Hitpoints: {props.aiProps.hitPoints}
-    <div
-        ref={drop}
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          // zIndex: !isDragging && canDrop ? 2 : 'auto',
-          // border: canDrop && validTarget ? '5px solid blue' : '0px',
-        }}
-    />
+  return <div className='AICardZone'>
+    <div className='AICard'>
+      AI Hitpoints: {props.aiProps.hitPoints}
+      <div
+          ref={drop}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            // zIndex: !isDragging && canDrop ? 2 : 'auto',
+            // border: canDrop && validTarget ? '5px solid blue' : '0px',
+          }}
+      />
+    </div>
   </div>
 }
 export default AICard

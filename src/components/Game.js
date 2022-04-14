@@ -83,8 +83,8 @@ const Game = () => {
                     power: 2,
                     toughness: 2,
                     manaCost: 2,
-                    printableManaCost: 'BB',
                     damage: 0,
+                    hitpoints: 2,
                     id: 30,
                   },
                   {
@@ -95,8 +95,8 @@ const Game = () => {
                     power: 1,
                     toughness: 3,
                     manaCost: 2,
-                    printableManaCost: 'BB',
                     damage: 0,
+                    hitpoints: 3,
                     id: 31,
                   },
                   {
@@ -107,8 +107,8 @@ const Game = () => {
                     power: 3,
                     toughness: 3,
                     manaCost: 3,
-                    printableManaCost: 'BBB',
                     damage: 0,
+                    hitpoints: 3,
                     id: 32,
                   },
                 ],
@@ -226,10 +226,6 @@ const Game = () => {
 
       case 'ATTACK':
         {
-          // console.log(action.attackingSource.name, "is attacking", action.attackedTarget, "inside reducer")
-
-          // let newDamage = action.attackedTarget.damage + action.attackingSource.power;
-          // console.log("new damage is", newDamage, "due to", action.attackedTarget.damage, "+", action.attackingSource.power)
           const source = state.playerState.player.cardsInPlay.find((elem) => {
             console.log('finding card', elem)
             return elem.id === action.attackingSource
@@ -520,7 +516,7 @@ const Game = () => {
   if (state.gameState.currentState === 'INACTIVE') {
     return (
       <div>
-        <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+        <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
           START GAME
         </button>
       </div>
@@ -528,7 +524,7 @@ const Game = () => {
   } else if (state.gameState.currentState === 'PLAYER_WIN') {
     return (
       <div>
-        <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+        <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
           START GAME
         </button>
         YOU WON THE GAME!
@@ -537,8 +533,8 @@ const Game = () => {
   } else if (state.gameState.currentState === 'PLAYER_LOSS') {
     return (
       <div>
-        <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
-          START GAME
+        <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+          RESTART GAME
         </button>
         YOU GOT KILLED!
       </div>
@@ -546,14 +542,14 @@ const Game = () => {
   } else {
       return (
         <div>
-          <button onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
+          <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
             RESTART GAME
           </button>
-          <button onClick={() => endTurn()}>NEW TURN</button>
-          Turn: {state.playerState.player.turn}
+          <button className='Button' onClick={() => endTurn()}>NEW TURN</button>
           <ManaPoolHUD
             currentManaProps={state.playerState.player.currentMana}
             maxManaProps={state.playerState.player.maxMana}
+            playerStateProps={state.playerState.player}
           />
           <div className="Board">
             <AICard

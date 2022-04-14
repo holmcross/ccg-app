@@ -1,14 +1,18 @@
 .Board {
-  background-color: rgb(225, 225, 225);
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(235, 219, 196);
   margin: 10px;
   padding: 10px;
   border: solid black 1px;
+  width: 100vw;
+  height: 100vh
 }
 
 .AIZone {
   display: flex;
   background-color: rgb(225, 142, 142);
-  justify-content: left;
+  justify-content: center;
   column-gap: 8px;
 }
 
@@ -24,6 +28,11 @@
   position: relative;
 }
 
+.AICardZone {
+  display: flex;
+  justify-content: center;
+}
+
 .PlayingZone {
   display: flex;
   flex-direction: column;
@@ -33,12 +42,6 @@
 }
 
 .PlayingZone-Creatures{
-  display: flex;
-  justify-content: left;
-  column-gap: 8px;
-}
-
-.PlayingZone-Lands {
   display: flex;
   justify-content: left;
   column-gap: 8px;
@@ -86,7 +89,7 @@
   min-height: 175px;
   max-width: 125px;
   background-color: rgb(159, 159, 159);
-  background-image: url('./components/images/black.template.png');
+  background-image: url('./components/images/hs.template.png');
   background-size: contain;
   transition: transform .25s;
   cursor: pointer;
@@ -146,4 +149,14 @@
 
 .CardInPlay-Footer {
   display: flex;
+}
+
+.ManaPoolHUD {
+  margin: 10px;
+}
+
+.Button {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
 }
