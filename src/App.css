@@ -1,12 +1,20 @@
+.Canvas {
+  display: flex;
+  flex-direction: row;
+}
+
 .Board {
   display: flex;
   flex-direction: column;
   background-color: rgb(235, 219, 196);
-  margin: 10px;
-  padding: 10px;
   border: solid black 1px;
   width: 100vw;
   height: 100vh
+}
+
+.Damage {
+  display: flex;
+  color: red;
 }
 
 .AIZone {
@@ -14,6 +22,8 @@
   background-color: rgb(225, 142, 142);
   justify-content: center;
   column-gap: 8px;
+  height: 20%;
+  position: relative;
 }
 
 .AICard {
@@ -22,8 +32,10 @@
   min-height: 140px;
   max-width: 100px;
   background-image: url('./components/images/warlock.png');
-  background-color: rgb(159, 159, 159);
+  background-repeat: no-repeat;
+  background-color: transparent;
   background-size: contain;
+  background-position: center;
   transition: transform .25s;
   cursor: pointer;
   position: relative;
@@ -32,6 +44,8 @@
 .AICardZone {
   display: flex;
   justify-content: center;
+  height: 20%;
+  position: relative;
 }
 
 .PlayingZone {
@@ -40,6 +54,8 @@
   background-color: bisque;
   justify-content: left;
   column-gap: 8px;
+  height: 20%;
+  position: relative;
 }
 
 .PlayingZone-Creatures{
@@ -53,6 +69,8 @@
   background-color: honeydew;
   justify-content: center;
   column-gap: 8px;
+  height: 20%;
+  position: relative;
 }
 
 /* to be removed, unless we inherit properties as a base class */
@@ -81,23 +99,27 @@
   position: relative;
 }
 .CardInHand:hover {
-  transform: scale(1.2);
+  transform: scale(1.5);
+  z-index: 2;
 }
 
 .CardInPlay {
   display: flex;
+  flex-direction: row;
   min-width: 100px;
   min-height: 140px;
   max-width: 100px;
-  background-color: rgb(159, 159, 159);
-  background-image: url('./components/images/hs.template.png');
+  background-color:  rgb(159, 159, 159);
+  background-image: url('./components/images/black.template.png');
   background-size: contain;
   transition: transform .25s;
   cursor: pointer;
   position: relative;
+  border-radius: 5px;
 }
 .CardInPlay:hover {
-  transform: scale(1.2);
+  transform: scale(1.5);
+  z-index: 2;
 }
 
 .Card-Header {

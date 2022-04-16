@@ -515,7 +515,7 @@ const Game = () => {
 
   if (state.gameState.currentState === 'INACTIVE') {
     return (
-      <div>
+      <div className='Canvas'>
         <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
           START GAME
         </button>
@@ -523,7 +523,7 @@ const Game = () => {
     )
   } else if (state.gameState.currentState === 'PLAYER_WIN') {
     return (
-      <div>
+      <div className='Canvas'>
         <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
           START GAME
         </button>
@@ -532,7 +532,7 @@ const Game = () => {
     )
   } else if (state.gameState.currentState === 'PLAYER_LOSS') {
     return (
-      <div>
+      <div className='Canvas'>
         <button className='Button' onClick={() => dispatchPlayerActions({ type: 'SETUP_GAME' })}>
           RESTART GAME
         </button>

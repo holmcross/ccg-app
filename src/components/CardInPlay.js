@@ -38,24 +38,36 @@ const CardInPlay = (props) => {
   }))
 
   return (
-        <div className="CardInPlay">
-        <div
-        ref={drop}
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          zIndex: !isDragging && canDrop ? 2 : 'auto',
-          border: canDrop && validTarget ? '5px solid blue' : '0px',
-        }}
-        />
-        {validTarget && canDrop && (
-          <div style={{ position: 'absolute', fontSize: '20pt', color: 'white' }}>
-          {props.cardProps.id}
+        <div className="CardInPlay"
+          style={{border: props.cardProps.canAttack ? '3px solid blue' : '0px',}}
+        >
+          <div className="Card-Header">
+            {props.cardProps.name}
+            <div className="Card-Cost">{props.cardProps.manaCost}</div>
           </div>
-        )}
+          <div className='Damage'>damage is : {props.cardProps.damage}</div>
+          <div className="Card-PT" style={{}}>
+            {props.cardProps.power}/{props.cardProps.toughness}
+          </div>
+          <div
+            ref={drop}
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              zIndex: !isDragging && canDrop ? 2 : 'auto',
+              /*border: canDrop && validTarget ? '5px solid blue' : '0px',*/
+            }}
+          />
+          
+          {validTarget && canDrop && (
+            <div style={{ position: 'absolute', fontSize: '20pt', color: 'white' }}>
+            {props.cardProps.id}
+            </div>
+          )}
+
           <div
           ref={drag}
           style={{
@@ -67,16 +79,10 @@ const CardInPlay = (props) => {
             top: 0,
           }}
           />
-          <div className="Card-Header">
-          {props.cardProps.name}
-          <div className="Card-Cost">{props.cardProps.manaCost}</div>
-          </div>
-          damage is : {props.cardProps.damage}
-          {props.cardProps.canAttack && !props.cardProps.ai ? 'This creature can attack' : ''}
-          <div className="Card-PT" style={{}}>
-          {props.cardProps.power}/{props.cardProps.toughness}
-          </div>
-          </div>
+          
+          
+
+        </div>
   )
 }
 
