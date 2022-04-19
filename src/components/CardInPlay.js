@@ -41,14 +41,6 @@ const CardInPlay = (props) => {
         <div className="CardInPlay"
           style={{border: props.cardProps.canAttack ? '3px solid blue' : '0px',}}
         >
-          <div className="Card-Header">
-            {props.cardProps.name}
-            <div className="Card-Cost">{props.cardProps.manaCost}</div>
-          </div>
-          <div className='Damage'>damage is : {props.cardProps.damage}</div>
-          <div className="Card-PT" style={{}}>
-            {props.cardProps.power}/{props.cardProps.toughness}
-          </div>
           <div
             ref={drop}
             style={{
@@ -80,8 +72,15 @@ const CardInPlay = (props) => {
           }}
           />
           
+          <div className="Card-Header">
+            {props.cardProps.name}
+            <div className="Card-Cost">{props.cardProps.manaCost}</div>
+          </div>
+          <div className='Damage'>damage is : {props.cardProps.damage}</div>
+          <div className="Card-PT" style={{}}>
+            {props.cardProps.power}/{props.cardProps.toughness}
+          </div>
           
-
         </div>
   )
 }
