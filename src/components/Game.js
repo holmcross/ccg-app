@@ -143,7 +143,7 @@ const Game = () => {
 
           newDeck = structuredClone(state.playerState.player.deck)
 
-          if (state.playerState.player.hand.length < 10) {
+          if (state.playerState.player.hand.length < 7) {
             newCardInHand = newDeck.shift()
             newHand = [...state.playerState.player.hand, newCardInHand]
           } else {
